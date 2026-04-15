@@ -23,7 +23,7 @@
             overflow-x: hidden;
         }
 
-        /* Animated Background VFX */
+        /* Full Screen VFX Background */
         .vfx-bg {
             position: fixed;
             top: 0;
@@ -78,7 +78,7 @@
             100% { transform: translateY(-100vh) translateX(100px) rotate(360deg); opacity: 0; }
         }
 
-        /* Checkout Container */
+        /* Checkout Container - Full Screen */
         .checkout-wrapper {
             min-height: 100vh;
             display: flex;
@@ -99,14 +99,8 @@
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Header */
@@ -182,12 +176,6 @@
             color: #6c5ce7;
         }
 
-        .section-title i {
-            font-size: 20px;
-            color: #6c5ce7;
-        }
-
-        /* Form Groups */
         .form-group {
             margin-bottom: 20px;
         }
@@ -225,7 +213,7 @@
             gap: 16px;
         }
 
-        /* Payment Methods Grid - All Black Emojis */
+        /* Payment Methods Grid */
         .payment-methods-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -257,11 +245,6 @@
             background: #6c5ce7;
         }
 
-        .payment-option i {
-            font-size: 20px;
-            color: #fff;
-        }
-
         /* Tip Options */
         .tip-options {
             display: flex;
@@ -277,7 +260,6 @@
             border-radius: 40px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 14px;
         }
 
         .tip-btn:hover {
@@ -331,12 +313,10 @@
             color: white;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
         .apply-promo:hover {
             background: #a855f7;
-            transform: scale(1.02);
         }
 
         .promo-message {
@@ -372,7 +352,6 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
-            font-size: 14px;
         }
 
         .grand-total {
@@ -384,7 +363,6 @@
             border-top: 1px solid rgba(108, 92, 231, 0.3);
         }
 
-        /* Pay Button */
         .pay-button {
             width: 100%;
             padding: 18px;
@@ -404,6 +382,54 @@
             box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
         }
 
+        /* Processing Overlay */
+        .processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 6000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .processing-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 70px;
+            height: 70px;
+            border: 4px solid rgba(108, 92, 231, 0.2);
+            border-top: 4px solid #6c5ce7;
+            border-right: 4px solid #a855f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .processing-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        .processing-subtext {
+            font-size: 13px;
+            color: #888;
+            margin-top: 8px;
+        }
+
         /* PayPal Modal */
         .paypal-modal {
             position: fixed;
@@ -413,17 +439,14 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(20px);
-            z-index: 4000;
+            z-index: 7000;
             display: none;
             justify-content: center;
             align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
         .paypal-modal.show {
             display: flex;
-            opacity: 1;
         }
 
         .paypal-container {
@@ -432,13 +455,7 @@
             width: 90%;
             max-width: 450px;
             overflow: hidden;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
             color: #1a1a2e;
-        }
-
-        .paypal-modal.show .paypal-container {
-            transform: scale(1);
         }
 
         .paypal-header {
@@ -514,19 +531,14 @@
             display: none;
         }
 
-        .paypal-loading .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #0070ba;
+        .paypal-loading .spinner-small {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0070ba;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            margin: 0 auto 15px;
         }
 
         /* Receipt Modal */
@@ -538,17 +550,14 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(20px);
-            z-index: 5000;
+            z-index: 8000;
             display: none;
             justify-content: center;
             align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
         .receipt-modal.show {
             display: flex;
-            opacity: 1;
         }
 
         .receipt-content {
@@ -559,12 +568,6 @@
             max-width: 500px;
             text-align: center;
             border: 1px solid #6c5ce7;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
-
-        .receipt-modal.show .receipt-content {
-            transform: scale(1);
         }
 
         .receipt-icon {
@@ -616,7 +619,6 @@
             margin-top: 16px;
         }
 
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -624,48 +626,27 @@
             background: #10b981;
             padding: 14px 28px;
             border-radius: 16px;
-            z-index: 6000;
+            z-index: 9000;
             transform: translateX(400px);
             transition: transform 0.3s;
-            font-weight: 500;
         }
 
         .toast.show {
             transform: translateX(0);
         }
 
-        /* Responsive */
         @media (max-width: 900px) {
-            .checkout-two-col {
-                flex-direction: column;
-            }
-            .checkout-left {
-                border-right: none;
-                border-bottom: 1px solid rgba(108, 92, 231, 0.2);
-            }
-            .row-2 {
-                grid-template-columns: 1fr;
-            }
-            .payment-methods-grid {
-                grid-template-columns: 1fr;
-            }
-            .checkout-header {
-                padding: 20px;
-                flex-direction: column;
-                text-align: center;
-            }
+            .checkout-two-col { flex-direction: column; }
+            .checkout-left { border-right: none; border-bottom: 1px solid rgba(108, 92, 231, 0.2); }
+            .row-2 { grid-template-columns: 1fr; }
+            .payment-methods-grid { grid-template-columns: 1fr; }
+            .checkout-header { padding: 20px; flex-direction: column; text-align: center; }
         }
 
         @media (max-width: 600px) {
-            .checkout-left, .checkout-right {
-                padding: 24px;
-            }
-            .tip-options {
-                flex-direction: column;
-            }
-            .tip-custom {
-                width: 100%;
-            }
+            .checkout-left, .checkout-right { padding: 24px; }
+            .tip-options { flex-direction: column; }
+            .tip-custom { width: 100%; }
         }
     </style>
 </head>
@@ -694,7 +675,6 @@
 
         <div class="checkout-two-col">
             <div class="checkout-left">
-                <!-- Contact Information -->
                 <div class="section-title">
                     <i class="fas fa-user-circle"></i>
                     <span>Contact Information</span>
@@ -720,7 +700,6 @@
                     </div>
                 </div>
 
-                <!-- Billing Address -->
                 <div class="section-title" style="margin-top: 28px;">
                     <i class="fas fa-map-marker-alt"></i>
                     <span>Billing Address</span>
@@ -756,7 +735,6 @@
                     </div>
                 </div>
 
-                <!-- Payment Method -->
                 <div class="section-title" style="margin-top: 28px;">
                     <i class="fas fa-credit-card"></i>
                     <span>Payment Method</span>
@@ -779,7 +757,6 @@
                     </div>
                 </div>
 
-                <!-- Tip Section -->
                 <div class="section-title" style="margin-top: 28px;">
                     <i class="fas fa-heart"></i>
                     <span>Support the Team - Add a Tip</span>
@@ -793,7 +770,6 @@
                     <input type="number" id="customTip" class="tip-custom" placeholder="Custom ₱" min="0" step="10" oninput="onCustomTip()">
                 </div>
 
-                <!-- Promo Code -->
                 <div class="promo-section">
                     <div class="promo-input-group">
                         <input type="text" id="promoCode" class="promo-input" placeholder="Enter promo code">
@@ -831,7 +807,14 @@
     </div>
 </div>
 
-<!-- Fake PayPal Modal -->
+<!-- Processing Overlay -->
+<div class="processing-overlay" id="processingOverlay">
+    <div class="spinner"></div>
+    <div class="processing-text">Processing Payment...</div>
+    <div class="processing-subtext">Please wait while we verify your information</div>
+</div>
+
+<!-- PayPal Modal -->
 <div class="paypal-modal" id="paypalModal">
     <div class="paypal-container">
         <div class="paypal-header">
@@ -840,6 +823,7 @@
         </div>
         <div class="paypal-body">
             <div id="paypalLoginView">
+                <div class="paypal-amount" id="paypalAmountDisplay">₱0</div>
                 <p style="text-align:center; margin-bottom:20px;">Log in to your PayPal account</p>
                 <div class="paypal-card">
                     <input type="email" id="paypalEmail" placeholder="Email or mobile number" value="test@example.com">
@@ -851,7 +835,7 @@
                 </div>
             </div>
             <div id="paypalLoadingView" class="paypal-loading">
-                <div class="spinner"></div>
+                <div class="spinner-small"></div>
                 <p>Processing payment...</p>
             </div>
         </div>
@@ -864,7 +848,10 @@
         <div class="receipt-icon"><i class="fas fa-check-circle"></i></div>
         <div class="receipt-title">Payment Successful!</div>
         <div id="receiptDetails" class="receipt-details"></div>
-        <button class="receipt-close" onclick="closeReceipt()">Done</button>
+        <div class="receipt-row" style="justify-content: center;">
+            <span style="color: #10b981;">✓ Order confirmed</span>
+        </div>
+        <button class="receipt-close" onclick="closeReceiptAndRedirect()">Continue to Shop</button>
     </div>
 </div>
 
@@ -884,21 +871,21 @@
         document.getElementById('particles').appendChild(p);
     }
 
-    // Get cart data from URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const cartData = urlParams.get('cart');
+    // Discord Webhook URL
+    const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1488808773492543508/bpbJDBX3v1LLJXo0ri3xbi1Lbpu7BGXzVR1z4aCy1pP0bFqJsRrqM_ncNTi5ToDiCZ4d';
     
-    // Sample cart items (in production, this would come from the previous page)
+    // Cart data (in production, this would come from the previous page via URL or localStorage)
     let cartItems = [
         { name: "Batwing", quantity: 1, price: 152 },
         { name: "Harvester", quantity: 1, price: 608 },
         { name: "Icewing", quantity: 2, price: 72 }
     ];
     
-    // Try to parse cart from URL
-    if (cartData) {
+    // Try to load cart from localStorage
+    const savedCart = localStorage.getItem('checkout_cart');
+    if (savedCart) {
         try {
-            cartItems = JSON.parse(decodeURIComponent(cartData));
+            cartItems = JSON.parse(savedCart);
         } catch(e) {}
     }
     
@@ -907,6 +894,7 @@
     let promoApplied = false;
     let promoDiscount = 0;
     let usedPromoCodes = JSON.parse(localStorage.getItem('checkout_used_codes') || '[]');
+    let currentTotal = 0;
     
     function showToast(msg) {
         const t = document.getElementById('toast');
@@ -915,24 +903,117 @@
         setTimeout(() => t.classList.remove('show'), 3000);
     }
     
+    // Address Verification
+    function verifyAddress(country, state, city, zip, street) {
+        // Basic validation - checks if fields are not empty and have reasonable values
+        if (!country || !state || !city || !zip || !street) {
+            return { valid: false, message: "All address fields are required" };
+        }
+        if (state.length < 2) {
+            return { valid: false, message: "Please enter a valid state/province" };
+        }
+        if (city.length < 2) {
+            return { valid: false, message: "Please enter a valid city" };
+        }
+        if (zip.length < 3) {
+            return { valid: false, message: "Please enter a valid ZIP code" };
+        }
+        if (street.length < 5) {
+            return { valid: false, message: "Please enter a valid street address" };
+        }
+        
+        // Country-specific ZIP validation
+        if (country === 'PH' && !/^\d{4}$/.test(zip)) {
+            return { valid: false, message: "Philippine ZIP code must be 4 digits" };
+        }
+        if (country === 'US' && !/^\d{5}$/.test(zip)) {
+            return { valid: false, message: "US ZIP code must be 5 digits" };
+        }
+        
+        return { valid: true, message: "Address verified" };
+    }
+    
+    // Send Discord Webhook Notification
+    async function sendDiscordNotification(orderDetails) {
+        const embed = {
+            title: "🛒 NEW ORDER!",
+            color: 0x6c5ce7,
+            fields: [
+                { name: "📋 Order Number", value: orderDetails.orderNumber, inline: true },
+                { name: "👤 Customer Name", value: orderDetails.customerName, inline: true },
+                { name: "📧 Email", value: orderDetails.email, inline: true },
+                { name: "🎮 Roblox User", value: orderDetails.robloxUser, inline: true },
+                { name: "📦 Items", value: orderDetails.items, inline: false },
+                { name: "💰 Subtotal", value: orderDetails.subtotal, inline: true },
+                { name: "🎫 Discount", value: orderDetails.discount, inline: true },
+                { name: "💝 Tip", value: orderDetails.tip, inline: true },
+                { name: "💵 Total", value: orderDetails.total, inline: true },
+                { name: "💳 Payment Method", value: orderDetails.paymentMethod, inline: true },
+                { name: "📍 Address", value: orderDetails.address, inline: false },
+                { name: "📅 Date", value: new Date().toLocaleString(), inline: true }
+            ],
+            footer: { text: "ECHOKNIVES Order System" },
+            timestamp: new Date().toISOString()
+        };
+        
+        try {
+            await fetch(DISCORD_WEBHOOK, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ embeds: [embed] })
+            });
+            console.log("Discord notification sent");
+        } catch (error) {
+            console.error("Discord webhook error:", error);
+        }
+    }
+    
+    // Save order to localStorage (never gets deleted)
+    function saveOrder(orderData) {
+        let orders = JSON.parse(localStorage.getItem('echoknives_orders') || '[]');
+        orders.unshift(orderData);
+        localStorage.setItem('echoknives_orders', JSON.stringify(orders));
+        
+        // Also save a permanent message in localStorage that never expires
+        let messages = JSON.parse(localStorage.getItem('echoknives_messages') || '[]');
+        messages.unshift({
+            id: Date.now(),
+            type: 'order_confirmation',
+            orderNumber: orderData.orderNumber,
+            message: `✅ ORDER #${orderData.orderNumber} CONFIRMED!\n\nItems: ${orderData.items}\nTotal: ${orderData.total}\nRoblox: @${orderData.robloxUser}\n\n📦 Your items will be delivered within 24 hours or less.\n\nThank you for shopping at ECHOKNIVES!`,
+            timestamp: new Date().toISOString(),
+            read: false
+        });
+        localStorage.setItem('echoknives_messages', JSON.stringify(messages));
+    }
+    
     function updateOrderSummary() {
         const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const discountAmount = subtotal * promoDiscount;
         const discountedSubtotal = subtotal - discountAmount;
         const total = discountedSubtotal + selectedTip;
+        currentTotal = total;
         
         const container = document.getElementById('orderItems');
-        container.innerHTML = cartItems.map(item => `
-            <div class="order-item">
-                <span>${item.name} x${item.quantity}</span>
-                <span>₱${(item.price * item.quantity).toLocaleString()}</span>
-            </div>
-        `).join('');
+        if (cartItems.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">No items in cart</div>';
+        } else {
+            container.innerHTML = cartItems.map(item => `
+                <div class="order-item">
+                    <span>${item.name} x${item.quantity}</span>
+                    <span>₱${(item.price * item.quantity).toLocaleString()}</span>
+                </div>
+            `).join('');
+        }
         
         document.getElementById('subtotal').innerHTML = `₱${subtotal.toLocaleString()}`;
         document.getElementById('discount').innerHTML = `-₱${discountAmount.toLocaleString()}`;
         document.getElementById('tipAmount').innerHTML = `₱${selectedTip.toLocaleString()}`;
         document.getElementById('grandTotal').innerHTML = `₱${total.toLocaleString()}`;
+        
+        // Update PayPal modal amount
+        const paypalAmount = document.getElementById('paypalAmountDisplay');
+        if (paypalAmount) paypalAmount.innerHTML = `₱${total.toLocaleString()}`;
     }
     
     function selectPayment(payment) {
@@ -984,30 +1065,19 @@
         }
     }
     
-    function processPayment() {
-        // Validate required fields
-        const firstName = document.getElementById('firstName').value.trim();
-        const lastName = document.getElementById('lastName').value.trim();
-        const email = document.getElementById('emailAddress').value.trim();
-        const robloxUser = document.getElementById('robloxUsername').value.trim();
-        const address = document.getElementById('address').value.trim();
-        const city = document.getElementById('city').value.trim();
-        const state = document.getElementById('state').value.trim();
-        const zip = document.getElementById('zip').value.trim();
-        
-        if (!firstName || !lastName || !email || !robloxUser || !address || !city || !state || !zip) {
-            showToast("Please fill in all required fields");
-            return;
-        }
-        
-        if (selectedPayment === 'paypal') {
-            openPaypalModal();
-        } else {
-            processDirectPayment();
-        }
+    // Processing overlay functions
+    function showProcessing() {
+        document.getElementById('processingOverlay').classList.add('show');
     }
     
+    function hideProcessing() {
+        document.getElementById('processingOverlay').classList.remove('show');
+    }
+    
+    // PayPal Modal functions
     function openPaypalModal() {
+        const total = currentTotal;
+        document.getElementById('paypalAmountDisplay').innerHTML = `₱${total.toLocaleString()}`;
         document.getElementById('paypalModal').classList.add('show');
     }
     
@@ -1026,59 +1096,151 @@
             return;
         }
         
+        // Show loading in PayPal modal
         document.getElementById('paypalLoginView').style.display = 'none';
         document.getElementById('paypalLoadingView').style.display = 'block';
         
+        // Simulate payment processing
         setTimeout(() => {
             closePaypalModal();
-            processDirectPayment();
+            completeOrder();
         }, 2000);
     }
     
-    function processDirectPayment() {
+    async function completeOrder() {
+        // Validate all fields
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('emailAddress').value.trim();
+        const robloxUser = document.getElementById('robloxUsername').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const state = document.getElementById('state').value.trim();
+        const zip = document.getElementById('zip').value.trim();
+        const country = document.getElementById('country').value;
+        
+        // Address verification
+        const addressCheck = verifyAddress(country, state, city, zip, address);
+        if (!addressCheck.valid) {
+            showToast(addressCheck.message);
+            return;
+        }
+        
+        if (!firstName || !lastName || !email || !robloxUser) {
+            showToast("Please fill in all required fields");
+            return;
+        }
+        
         const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const discountAmount = subtotal * promoDiscount;
         const total = (subtotal - discountAmount) + selectedTip;
         const orderNumber = 'EK-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
-        const robloxUser = document.getElementById('robloxUsername').value.trim();
         
+        const orderData = {
+            orderNumber: orderNumber,
+            customerName: `${firstName} ${lastName}`,
+            email: email,
+            robloxUser: robloxUser,
+            items: cartItems.map(i => `${i.name} x${i.quantity}`).join(', '),
+            subtotal: `₱${subtotal.toLocaleString()}`,
+            discount: promoApplied ? `-₱${discountAmount.toLocaleString()} (10%)` : "₱0",
+            tip: `₱${selectedTip.toLocaleString()}`,
+            total: `₱${total.toLocaleString()}`,
+            paymentMethod: selectedPayment.toUpperCase(),
+            address: `${address}, ${city}, ${state}, ${zip}, ${country}`,
+            status: "pending",
+            timestamp: new Date().toISOString()
+        };
+        
+        // Send to Discord
+        await sendDiscordNotification(orderData);
+        
+        // Save order permanently
+        saveOrder(orderData);
+        
+        // Show receipt
         const receiptHtml = `
             <div class="receipt-row"><strong>Order #:</strong> ${orderNumber}</div>
             <div class="receipt-row"><strong>Date:</strong> ${new Date().toLocaleString()}</div>
-            <div class="receipt-row"><strong>Items:</strong> ${cartItems.map(i => `${i.name} x${i.quantity}`).join(', ')}</div>
-            <div class="receipt-row"><strong>Subtotal:</strong> ₱${subtotal.toLocaleString()}</div>
-            ${promoApplied ? `<div class="receipt-row"><strong>Discount (10%):</strong> -₱${discountAmount.toLocaleString()}</div>` : ''}
-            <div class="receipt-row"><strong>Tip:</strong> ₱${selectedTip.toLocaleString()}</div>
-            <div class="receipt-row receipt-total"><strong>Total Paid:</strong> ₱${total.toLocaleString()}</div>
-            <div class="receipt-row"><strong>Payment:</strong> ${selectedPayment.toUpperCase()}</div>
+            <div class="receipt-row"><strong>Items:</strong> ${orderData.items}</div>
+            <div class="receipt-row"><strong>Subtotal:</strong> ${orderData.subtotal}</div>
+            <div class="receipt-row"><strong>Discount:</strong> ${orderData.discount}</div>
+            <div class="receipt-row"><strong>Tip:</strong> ${orderData.tip}</div>
+            <div class="receipt-row receipt-total"><strong>Total Paid:</strong> ${orderData.total}</div>
+            <div class="receipt-row"><strong>Payment:</strong> ${orderData.paymentMethod}</div>
             <div class="receipt-row"><strong>Roblox User:</strong> @${robloxUser}</div>
             <div class="receipt-row"><strong>Delivery Status:</strong> <span style="color:#10b981;">Processing</span></div>
-            <div class="receipt-row"><strong>Thank you for shopping at ECHOKNIVES!</strong></div>
+            <div class="receipt-row"><strong>📦 Estimated Delivery:</strong> Within 24 hours</div>
         `;
         document.getElementById('receiptDetails').innerHTML = receiptHtml;
-        document.getElementById('receiptModal').classList.add('show');
         
-        // Save order to localStorage
-        const orders = JSON.parse(localStorage.getItem('checkout_orders') || '[]');
-        orders.push({
-            orderNumber: orderNumber,
-            items: cartItems,
-            total: total,
-            robloxUser: robloxUser,
-            date: new Date().toISOString(),
-            status: 'pending'
-        });
-        localStorage.setItem('checkout_orders', JSON.stringify(orders));
+        // Clear cart from localStorage
+        localStorage.removeItem('checkout_cart');
+        
+        // Show receipt modal
+        document.getElementById('receiptModal').classList.add('show');
     }
     
-    function closeReceipt() {
+    function processPayment() {
+        // Validate all fields first
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('emailAddress').value.trim();
+        const robloxUser = document.getElementById('robloxUsername').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const state = document.getElementById('state').value.trim();
+        const zip = document.getElementById('zip').value.trim();
+        const country = document.getElementById('country').value;
+        
+        // Address verification
+        const addressCheck = verifyAddress(country, state, city, zip, address);
+        if (!addressCheck.valid) {
+            showToast(addressCheck.message);
+            return;
+        }
+        
+        if (!firstName || !lastName || !email || !robloxUser) {
+            showToast("Please fill in all required fields");
+            return;
+        }
+        
+        if (cartItems.length === 0) {
+            showToast("Your cart is empty");
+            return;
+        }
+        
+        if (selectedPayment === 'paypal') {
+            openPaypalModal();
+        } else {
+            // Show processing overlay for 2 seconds then complete
+            showProcessing();
+            setTimeout(() => {
+                hideProcessing();
+                completeOrder();
+            }, 2000);
+        }
+    }
+    
+    function closeReceiptAndRedirect() {
         document.getElementById('receiptModal').classList.remove('show');
+        // Redirect back to shop
         window.location.href = 'index.html';
     }
     
     // Initialize
     updateOrderSummary();
     selectPayment('paypal');
+    
+    // Make functions global
+    window.selectPayment = selectPayment;
+    window.selectTip = selectTip;
+    window.onCustomTip = onCustomTip;
+    window.applyPromoCode = applyPromoCode;
+    window.processPayment = processPayment;
+    window.closePaypalModal = closePaypalModal;
+    window.processPaypalPayment = processPaypalPayment;
+    window.closeReceiptAndRedirect = closeReceiptAndRedirect;
 </script>
 </body>
 </html>
