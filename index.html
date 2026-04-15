@@ -1,0 +1,164 @@
+// discord-bot.js - Run this on your computer or a free hosting service (Render, Replit)
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
+const axios = require('axios');
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.DirectMessages
+    ]
+});
+
+// Your Discord Bot Token (get from https://discord.com/developers/applications)
+const BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE';
+const WEBSITE_URL = 'https://your-site.netlify.app';
+const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1488808773492543508/bpbJDBX3v1LLJXo0ri3xbi1Lbpu7BGXzVR1z4aCy1pP0bFqJsRrqM_ncNTi5ToDiCZ4d';
+
+// Store pending orders
+let pendingOrders = {};
+
+client.on('ready', () => {
+    console.log(`✅ Bot is online! Logged in as ${client.user.tag}`);
+    console.log(`📦 ECHOKNIVES Delivery Bot is ready!`);
+    client.user.setUsername('Sigmake5');
+});
+
+// When a user DMs the bot
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return;
+    if (message.channel.type !== 1) return; // Only DMs
+
+    const content = message.content.toLowerCase();
+    const userId = message.author.id;
+
+    // Command: !order [orderNumber]
+    if (content.startsWith('!order')) {
+        const orderNumber = content.split(' ')[1];
+        if (!orderNumber) {
+            return message.reply('❌ Please provide an order number. Usage: `!order EK-XXXXX`');
+        }
+
+        // Check if order exists (call your website API)
+        try {
+            const response = await axios.get(`${WEBSITE_URL}/api/order/${orderNumber}`);
+            const order = response.data;
+            
+            if (!order) {
+                return message.reply('❌ Order not found. Please check your order number.');
+            }
+
+            pendingOrders[userId] = order;
+            
+            const embed = new EmbedBuilder()
+                .setTitle('📦 Order Found!')
+                .setColor(0x6366f1)
+                .addFields(
+                    { name: 'Order #', value: order.orderNumber, inline: true },
+                    { name: 'Items', value: order.items, inline: false },
+                    { name: 'Total', value: order.total, inline: true },
+                    { name: 'Status', value: '⏳ Pending Delivery', inline: true }
+                )
+                .setFooter({ text: 'Add Sigmake5 on Roblox to receive your items!' });
+            
+            await message.reply({ embeds: [embed] });
+            await message.reply('🎮 Add me on Roblox: **Sigmake5**\n🔗 https://www.roblox.com/user?username=Sigmake5\n\nOnce added, reply with `!ready` to confirm delivery.');
+
+        } catch (error) {
+            console.error('Order lookup error:', error);
+            message.reply('❌ Error finding order. Please contact support.');
+        }
+    }
+
+    // Command: !ready (user confirms they added the bot)
+    if (content === '!ready') {
+        const order = pendingOrders[userId];
+        if (!order) {
+            return message.reply('❌ No pending order found. Use `!order EK-XXXXX` first.');
+        }
+
+        // Notify admin channel
+        const adminEmbed = new EmbedBuilder()
+            .setTitle('🟡 ORDER READY FOR DELIVERY')
+            .setColor(0xf59e0b)
+            .addFields(
+                { name: 'Order #', value: order.orderNumber, inline: true },
+                { name: 'Customer', value: `<@${userId}>`, inline: true },
+                { name: 'Items', value: order.items, inline: false },
+                { name: 'Roblox User', value: order.robloxUser || 'Not provided', inline: true }
+            )
+            .setFooter({ text: 'Trade the items to the buyer, then click Complete' });
+
+        // Send to your admin channel (replace with your channel ID)
+        const adminChannel = await client.channels.fetch('YOUR_ADMIN_CHANNEL_ID');
+        const adminMsg = await adminChannel.send({ embeds: [adminEmbed] });
+
+        // Add buttons (requires discord.js v14)
+        await adminMsg.reply('✅ Ready to deliver! Trade the items to the buyer on Roblox.');
+        
+        await message.reply('✅ Ready! I will notify the admin. Please wait for the trade request on Roblox.');
+    }
+
+    // Admin command: !complete [orderNumber] (mark as delivered)
+    if (content.startsWith('!complete') && message.member?.permissions.has('Administrator')) {
+        const orderNumber = content.split(' ')[1];
+        if (!orderNumber) {
+            return message.reply('❌ Please provide an order number.');
+        }
+
+        // Find the user who had this order
+        let targetUserId = null;
+        for (const [uid, order] of Object.entries(pendingOrders)) {
+            if (order.orderNumber === orderNumber) {
+                targetUserId = uid;
+                break;
+            }
+        }
+
+        if (!targetUserId) {
+            return message.reply('❌ Order not found in pending list.');
+        }
+
+        const order = pendingOrders[targetUserId];
+        
+        // Send success message to buyer
+        const successEmbed = new EmbedBuilder()
+            .setTitle('✅ ORDER DELIVERED!')
+            .setColor(0x10b981)
+            .setDescription(`**Order #${orderNumber}**\n\nItems: ${order.items}\nTotal: ${order.total}\n\nThank you for shopping at ECHOKNIVES!`)
+            .setFooter({ text: 'Enjoy your items! Leave a review on our website.' });
+        
+        const buyer = await client.users.fetch(targetUserId);
+        await buyer.send({ embeds: [successEmbed] });
+        
+        // Send to Discord webhook
+        await axios.post(DISCORD_WEBHOOK, {
+            embeds: [{
+                title: '✅ ORDER DELIVERED!',
+                color: 0x10b981,
+                fields: [
+                    { name: 'Order #', value: orderNumber, inline: true },
+                    { name: 'Customer', value: buyer.tag, inline: true },
+                    { name: 'Items', value: order.items, inline: false },
+                    { name: 'Total', value: order.total, inline: true }
+                ],
+                timestamp: new Date().toISOString()
+            }]
+        });
+        
+        // Update website (call your API)
+        await axios.post(`${WEBSITE_URL}/api/order/delivered`, {
+            orderNumber: orderNumber,
+            status: 'delivered',
+            timestamp: new Date().toISOString()
+        });
+        
+        // Remove from pending
+        delete pendingOrders[targetUserId];
+        
+        await message.reply(`✅ Order ${orderNumber} marked as delivered! Buyer notified.`);
+    }
+});
+
+client.login(BOT_TOKEN);
