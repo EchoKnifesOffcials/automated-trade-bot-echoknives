@@ -1,714 +1,160 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Enable CORS for your shop
-app.use(cors({
-    origin: ['https://echoknives.onrender.com', 'http://localhost:3000'],
-    credentials: true
-}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(__dirname));
-
-// Store orders temporarily (in production, use a database)
-const orders = new Map();
-
-// API: Receive order from shop
-app.post('/api/create-order', (req, res) => {
-    const orderData = req.body;
-    const orderId = orderData.orderId || 'ORD-' + Date.now();
-    orders.set(orderId, {
-        ...orderData,
-        status: 'pending',
-        createdAt: new Date().toISOString()
-    });
-    console.log(`📦 Order received: ${orderId}`);
-    console.log(`   Items: ${orderData.items?.length || 0}`);
-    console.log(`   Total: ₱${orderData.subtotal}`);
-    console.log(`   Roblox: ${orderData.robloxUser}`);
-    res.json({ success: true, orderId: orderId });
-});
-
-// API: Get order status
-app.get('/api/order/:orderId', (req, res) => {
-    const order = orders.get(req.params.orderId);
-    if (order) {
-        res.json({ success: true, order });
-    } else {
-        res.json({ success: false, error: 'Order not found' });
-    }
-});
-
-// API: Payment success callback
-app.post('/api/payment-success', (req, res) => {
-    const { orderId, transactionId } = req.body;
-    if (orders.has(orderId)) {
-        const order = orders.get(orderId);
-        order.status = 'completed';
-        order.transactionId = transactionId;
-        order.completedAt = new Date().toISOString();
-        orders.set(orderId, order);
-        console.log(`✅ Payment completed: ${orderId}`);
-        res.json({ success: true });
-    } else {
-        res.json({ success: false });
-    }
-});
-
-// Health check
-app.get('/health', (req, res) => {
-    res.json({ status: 'ok', message: 'Payment site is running' });
-});
-
-// ========== MAIN PAYMENT PAGE ==========
-app.get('/', (req, res) => {
-    res.send(`<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ECHOKNIVES | Secure Checkout</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f0c29 0%, #1a1a3e 50%, #0f0c29 100%);
-            color: #fff;
-            overflow-x: hidden;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #1a1a3e);
+            color: white;
             min-height: 100vh;
             padding: 40px 20px;
         }
-
-        .animated-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            background: radial-gradient(circle at 20% 50%, #0f0c29 0%, #1a1a3e 50%, #0f0c29 100%);
-        }
-
-        .glow-orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.3;
-            z-index: -1;
-            animation: float 25s infinite ease-in-out;
-        }
-
-        .orb-1 { width: 400px; height: 400px; background: #6c5ce7; top: -200px; left: -200px; }
-        .orb-2 { width: 350px; height: 350px; background: #a855f7; bottom: -150px; right: -150px; animation-delay: 5s; }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(30px, -30px); }
-        }
-
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            background: rgba(108, 92, 231, 0.3);
-            border-radius: 50%;
-            animation: particleFloat 15s infinite linear;
-        }
-
-        @keyframes particleFloat {
-            0% { transform: translateY(100vh) translateX(0); opacity: 0; }
-            10% { opacity: 0.5; }
-            90% { opacity: 0.5; }
-            100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
-        }
-
-        .checkout-container {
-            max-width: 1200px;
+        .container {
+            max-width: 800px;
             margin: 0 auto;
-            background: rgba(15, 12, 41, 0.85);
-            backdrop-filter: blur(20px);
-            border-radius: 40px;
-            overflow: hidden;
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-        }
-
-        .checkout-header {
-            background: linear-gradient(135deg, #6c5ce7, #a855f7);
-            padding: 25px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .checkout-header h2 {
-            font-family: 'Orbitron', monospace;
-            font-size: 24px;
-            font-weight: 800;
-        }
-
-        .security-badge {
-            background: rgba(0,0,0,0.3);
-            padding: 8px 16px;
-            border-radius: 40px;
-            font-size: 12px;
-        }
-
-        .checkout-two-col {
-            display: flex;
-            flex-wrap: wrap;
-        }
-
-        .checkout-left {
-            flex: 1.2;
+            background: rgba(15,12,41,0.95);
+            border-radius: 30px;
+            border: 1px solid #6c5ce7;
             padding: 30px;
-            border-right: 1px solid rgba(108, 92, 231, 0.2);
         }
-
-        .checkout-right {
-            flex: 0.8;
-            padding: 30px;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #a855f7;
-            font-family: 'Orbitron', monospace;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 13px;
-            color: #ccc;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            border-radius: 30px;
-            color: white;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #6c5ce7;
-            background: rgba(108, 92, 231, 0.1);
-        }
-
-        .row-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .payment-methods-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-top: 10px;
-        }
-
-        .payment-option {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            border-radius: 30px;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-
-        .payment-option:hover {
-            background: rgba(108, 92, 231, 0.2);
-            transform: scale(1.02);
-        }
-
-        .payment-option.selected {
-            background: #6c5ce7;
-            border-color: #6c5ce7;
-        }
-
-        .payment-option i {
-            margin-right: 8px;
-        }
-
-        .tip-options {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-
-        .tip-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            padding: 8px 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .tip-btn:hover, .tip-btn.selected {
-            background: #6c5ce7;
-            border-color: #6c5ce7;
-        }
-
-        .promo-section {
-            background: rgba(108, 92, 231, 0.1);
-            border-radius: 20px;
-            padding: 15px;
-            margin-top: 20px;
-        }
-
-        .promo-input-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .promo-input {
-            flex: 1;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            border-radius: 30px;
-            color: white;
-        }
-
-        .apply-promo {
-            background: #6c5ce7;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 30px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .apply-promo:hover {
-            background: #a855f7;
-        }
-
-        .order-items {
-            margin-bottom: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .order-item {
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h2 { color: #6c5ce7; }
+        .cart-item {
             display: flex;
             justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .order-total {
-            padding-top: 15px;
-            border-top: 2px solid #6c5ce7;
-        }
-
-        .order-total div {
-            display: flex;
-            justify-content: space-between;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
             margin-bottom: 10px;
         }
-
-        .grand-total {
-            font-size: 22px;
-            font-weight: 800;
-            color: #6c5ce7;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(108, 92, 231, 0.3);
+        .total {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: right;
+            padding: 20px;
+            border-top: 2px solid #6c5ce7;
+            margin-top: 20px;
         }
-
-        .roblox-info {
-            background: rgba(108, 92, 231, 0.15);
-            border-radius: 20px;
-            padding: 15px;
-            margin-bottom: 20px;
-            text-align: center;
-            border: 1px solid rgba(108, 92, 231, 0.3);
-        }
-
-        .btn-pay {
+        button {
+            background: #10b981;
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
             border: none;
-            border-radius: 60px;
+            border-radius: 10px;
             color: white;
-            font-weight: 700;
-            font-size: 16px;
             cursor: pointer;
             margin-top: 20px;
-            transition: all 0.3s ease;
         }
-
-        .btn-pay:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
-        }
-
-        .btn-pay:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .loading {
+        button:hover { opacity: 0.9; }
+        .back-link {
+            display: block;
             text-align: center;
-            padding: 60px;
+            margin-top: 15px;
+            color: #a855f7;
+            text-decoration: none;
         }
-
-        .spinner {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(108, 92, 231, 0.3);
-            border-top-color: #6c5ce7;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .error-box {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid #ef4444;
-            border-radius: 20px;
-            padding: 20px;
+        .roblox-info {
+            background: rgba(108,92,231,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
             text-align: center;
-            margin: 20px;
         }
-
-        @media (max-width: 768px) {
-            .checkout-two-col { flex-direction: column; }
-            .checkout-left { border-right: none; border-bottom: 1px solid rgba(108, 92, 231, 0.2); }
-            .row-2 { grid-template-columns: 1fr; }
-            .payment-methods-grid { grid-template-columns: 1fr; }
-        }
+        .loading { text-align: center; padding: 50px; }
     </style>
 </head>
 <body>
-
-<div class="animated-bg"></div>
-<div class="glow-orb orb-1"></div>
-<div class="glow-orb orb-2"></div>
-<div class="particles" id="particles"></div>
-
-<div class="checkout-container">
-    <div class="checkout-header">
-        <h2><i class="fas fa-lock"></i> Secure Checkout</h2>
-        <div class="security-badge"><i class="fas fa-shield-alt"></i> 256-bit SSL Secure</div>
-    </div>
-    
-    <div id="mainContent" class="loading">
-        <div class="spinner"></div>
-        <p style="margin-top: 20px;">Loading your order...</p>
-    </div>
+<div class="container">
+    <div class="header"><h2>🔒 Secure Checkout</h2><p>ECHOKNIVES Premium MM2 Shop</p></div>
+    <div id="content" class="loading">📦 Loading your order...</div>
 </div>
-
 <script>
-    // ========== GET ORDER DATA FROM URL (SENT BY SHOP) ==========
+    // ========== READ CART DATA FROM URL ==========
     const urlParams = new URLSearchParams(window.location.search);
     const cartParam = urlParams.get('cart');
     const robloxUser = urlParams.get('roblox');
     const orderId = urlParams.get('order_id');
     const returnUrl = urlParams.get('return') || 'https://echoknives.onrender.com';
     
-    let orderItems = [];
-    let subtotal = 0;
+    let orderData = null;
     
-    // Parse cart data from URL
+    // Parse the cart data from URL
     if (cartParam) {
         try {
-            orderItems = JSON.parse(decodeURIComponent(cartParam));
-            subtotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            console.log('✅ Order loaded from URL:', orderItems);
+            const items = JSON.parse(decodeURIComponent(cartParam));
+            const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            orderData = { items, subtotal, robloxUser, orderId };
+            console.log('✅ Order loaded from URL:', orderData);
         } catch(e) {
             console.error('Parse error:', e);
         }
     }
     
-    // If no data in URL, check sessionStorage (fallback)
-    if (orderItems.length === 0) {
-        const saved = sessionStorage.getItem('echoknives_order');
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                orderItems = data.items || [];
-                subtotal = data.subtotal || 0;
-                console.log('✅ Order loaded from sessionStorage');
-            } catch(e) {}
-        }
+    // If no data, show demo mode
+    if (!orderData || !orderData.items || orderData.items.length === 0) {
+        orderData = {
+            items: [
+                { name: "Batwing", price: 152, quantity: 1 },
+                { name: "Icewing", price: 72, quantity: 2 }
+            ],
+            subtotal: 296,
+            robloxUser: robloxUser || "DemoUser",
+            orderId: orderId || "DEMO-" + Date.now()
+        };
+        document.getElementById('content').innerHTML += '<p style="color:#f59e0b; text-align:center; margin-top:10px;">⚠️ Demo Mode - No cart data received</p>';
     }
     
-    // Demo fallback (only if absolutely no data)
-    if (orderItems.length === 0) {
-        orderItems = [
-            { name: "Batwing", price: 152, quantity: 1, total: 152 },
-            { name: "Harvester", price: 608, quantity: 1, total: 608 },
-            { name: "Icewing", price: 72, quantity: 2, total: 144 }
-        ];
-        subtotal = 904;
-        document.getElementById('mainContent').innerHTML = \`
-            <div class="error-box">
-                <i class="fas fa-exclamation-triangle" style="font-size: 40px; margin-bottom: 10px;"></i>
-                <p>⚠️ Demo Mode - No cart data received from shop.</p>
-                <p style="font-size: 12px; margin-top: 10px;">Make sure you came from the shop site.</p>
-            </div>
-        \`;
-    }
-    
-    // Variables for checkout
-    let selectedPayment = "paypal";
-    let selectedTip = 0;
-    let promoApplied = false;
-    let promoDiscount = 0;
-    let promoCodeEntered = "";
-    
-    function renderCheckout() {
-        const itemsHtml = orderItems.map(item => \`
-            <div class="order-item">
-                <span>\${item.name} x\${item.quantity}</span>
-                <span>₱\${(item.price * item.quantity).toFixed(2)}</span>
-            </div>
-        \`).join('');
-        
-        const total = subtotal - promoDiscount + selectedTip;
-        
-        document.getElementById('mainContent').innerHTML = \`
-            <div class="checkout-two-col">
-                <div class="checkout-left">
-                    <div class="section-title"><i class="fas fa-user"></i> Contact Information</div>
-                    <div class="row-2">
-                        <div class="form-group"><label>First Name</label><input type="text" id="firstName" placeholder="John"></div>
-                        <div class="form-group"><label>Last Name</label><input type="text" id="lastName" placeholder="Doe"></div>
-                    </div>
-                    <div class="row-2">
-                        <div class="form-group"><label>Email Address</label><input type="email" id="emailAddress" placeholder="your@email.com"></div>
-                        <div class="form-group"><label>🎮 Roblox Username</label><input type="text" id="robloxUsername" value="\${robloxUser || ''}" placeholder="Your Roblox username" readonly style="background:rgba(108,92,231,0.2);"></div>
-                    </div>
-                    
-                    <div class="section-title" style="margin-top: 24px;"><i class="fas fa-map-marker-alt"></i> Billing Address</div>
-                    <div class="row-2">
-                        <div class="form-group"><label>Country</label><select id="country"><option value="PH">🇵🇭 Philippines</option><option value="US">🇺🇸 US</option><option value="GB">🇬🇧 UK</option></select></div>
-                        <div class="form-group"><label>State</label><input type="text" id="state" placeholder="State"></div>
-                    </div>
-                    <div class="form-group"><label>Street Address</label><input type="text" id="address" placeholder="Street address"></div>
-                    <div class="row-2">
-                        <div class="form-group"><label>ZIP Code</label><input type="text" id="zip" placeholder="ZIP"></div>
-                        <div class="form-group"><label>City</label><input type="text" id="city" placeholder="City"></div>
-                    </div>
-                    
-                    <div class="section-title" style="margin-top: 24px;"><i class="fas fa-credit-card"></i> Payment Method</div>
-                    <div class="payment-methods-grid">
-                        <div class="payment-option" data-payment="credit" onclick="selectPayment('credit')"><i class="fab fa-cc-visa"></i> Credit Card</div>
-                        <div class="payment-option" data-payment="debit" onclick="selectPayment('debit')"><i class="fas fa-credit-card"></i> Debit Card</div>
-                        <div class="payment-option" data-payment="gcash" onclick="selectPayment('gcash')"><i class="fas fa-mobile-alt"></i> GCash</div>
-                        <div class="payment-option selected" data-payment="paypal" onclick="selectPayment('paypal')"><i class="fab fa-paypal"></i> PayPal</div>
-                        <div class="payment-option" data-payment="mastercard" onclick="selectPayment('mastercard')"><i class="fab fa-cc-mastercard"></i> Mastercard</div>
-                    </div>
-                    
-                    <div class="section-title" style="margin-top: 24px;"><i class="fas fa-gift"></i> Support the Team</div>
-                    <div class="tip-options">
-                        <button type="button" class="tip-btn" data-tip="0" onclick="selectTip(0)">No tip</button>
-                        <button type="button" class="tip-btn" data-tip="50" onclick="selectTip(50)">₱50</button>
-                        <button type="button" class="tip-btn" data-tip="100" onclick="selectTip(100)">₱100</button>
-                        <button type="button" class="tip-btn" data-tip="250" onclick="selectTip(250)">₱250</button>
-                        <button type="button" class="tip-btn" data-tip="500" onclick="selectTip(500)">₱500</button>
-                        <input type="number" id="customTip" class="tip-custom" placeholder="Custom ₱" min="0" step="10" oninput="onCustomTip()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(108,92,231,0.3); border-radius:30px; padding:8px 16px; width:100px; color:white;">
-                    </div>
-                    
-                    <div class="section-title" style="margin-top: 24px;"><i class="fas fa-ticket-alt"></i> Promo Code</div>
-                    <div class="promo-section">
-                        <div class="promo-input-group">
-                            <input type="text" id="promoCodeInput" class="promo-input" placeholder="Enter promo code">
-                            <button class="apply-promo" onclick="applyPromoCode()">Apply</button>
-                        </div>
-                        <div id="promoMessage" style="font-size:12px; margin-top:10px;"></div>
-                    </div>
+    function displayOrder() {
+        let itemsHtml = '';
+        orderData.items.forEach(item => {
+            itemsHtml += `
+                <div class="cart-item">
+                    <div><strong>${escapeHtml(item.name)}</strong> x${item.quantity}</div>
+                    <div>₱${(item.price * item.quantity).toFixed(2)}</div>
                 </div>
-                
-                <div class="checkout-right">
-                    <div class="section-title"><i class="fas fa-shopping-cart"></i> Order Summary</div>
-                    <div class="roblox-info">
-                        <i class="fab fa-roblox"></i> <strong>Delivering to:</strong> @\${robloxUser || 'Not specified'}
-                        <div style="font-size:12px; margin-top:5px;">Order ID: \${orderId || 'Pending'}</div>
-                    </div>
-                    <div class="order-items">
-                        \${itemsHtml}
-                    </div>
-                    <div class="order-total">
-                        <div><span>Subtotal:</span><span id="displaySubtotal">₱\${subtotal.toFixed(2)}</span></div>
-                        <div><span>Discount:</span><span id="displayDiscount">-₱\${promoDiscount.toFixed(2)}</span></div>
-                        <div><span>Tip:</span><span id="displayTip">₱\${selectedTip.toFixed(2)}</span></div>
-                    </div>
-                    <div class="grand-total">
-                        <span>Total:</span>
-                        <span id="displayTotal">₱\${total.toFixed(2)}</span>
-                    </div>
-                    <button class="btn-pay" onclick="processOrder()">
-                        <i class="fas fa-lock"></i> Complete Payment
-                    </button>
-                    <div class="terms" style="font-size: 11px; text-align: center; margin-top: 15px; color: #64748b;">
-                        By completing your purchase, you agree to our Terms of Service
-                    </div>
-                </div>
-            </div>
-        \`;
-        
-        // Highlight selected payment
-        document.querySelectorAll('.payment-option').forEach(opt => {
-            if (opt.dataset.payment === selectedPayment) {
-                opt.classList.add('selected');
-            }
+            `;
         });
         
-        // Highlight selected tip
-        document.querySelectorAll('.tip-btn').forEach(btn => {
-            if (parseInt(btn.dataset.tip) === selectedTip) {
-                btn.classList.add('selected');
-            }
+        document.getElementById('content').innerHTML = `
+            <div class="roblox-info">
+                🎮 <strong>Delivering to:</strong> @${escapeHtml(orderData.robloxUser)}
+                <div style="font-size:12px; margin-top:5px;">Order ID: ${escapeHtml(orderData.orderId)}</div>
+            </div>
+            ${itemsHtml}
+            <div class="total">Total: ₱${orderData.subtotal.toFixed(2)}</div>
+            <button onclick="processPayment()">💳 Complete Payment (Demo)</button>
+            <a href="${returnUrl}" class="back-link">← Return to Shop</a>
+        `;
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
         });
     }
     
-    function selectPayment(payment) {
-        selectedPayment = payment;
-        document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
-        document.querySelector(\`.payment-option[data-payment="\${payment}"]\`).classList.add('selected');
-    }
-    
-    function selectTip(amount) {
-        selectedTip = amount;
-        document.querySelectorAll('.tip-btn').forEach(btn => btn.classList.remove('selected'));
-        document.querySelector(\`.tip-btn[data-tip="\${amount}"]\`).classList.add('selected');
-        document.getElementById('customTip').value = '';
-        updateTotals();
-    }
-    
-    function onCustomTip() {
-        const val = parseInt(document.getElementById('customTip').value) || 0;
-        selectedTip = val;
-        document.querySelectorAll('.tip-btn').forEach(btn => btn.classList.remove('selected'));
-        updateTotals();
-    }
-    
-    function applyPromoCode() {
-        const code = document.getElementById('promoCodeInput').value.trim().toUpperCase();
-        const messageDiv = document.getElementById('promoMessage');
-        
-        if (code === "STARTER26") {
-            promoApplied = true;
-            promoDiscount = 250;
-            messageDiv.innerHTML = '<span style="color:#10b981;">✅ Promo code applied! -₱250</span>';
-        } else if (code === "WELCOME100") {
-            promoApplied = true;
-            promoDiscount = 100;
-            messageDiv.innerHTML = '<span style="color:#10b981;">✅ Promo code applied! -₱100</span>';
-        } else {
-            promoApplied = false;
-            promoDiscount = 0;
-            messageDiv.innerHTML = '<span style="color:#ef4444;">❌ Invalid promo code</span>';
-        }
-        updateTotals();
-    }
-    
-    function updateTotals() {
-        const total = subtotal - promoDiscount + selectedTip;
-        document.getElementById('displaySubtotal').innerHTML = \`₱\${subtotal.toFixed(2)}\`;
-        document.getElementById('displayDiscount').innerHTML = \`-₱\${promoDiscount.toFixed(2)}\`;
-        document.getElementById('displayTip').innerHTML = \`₱\${selectedTip.toFixed(2)}\`;
-        document.getElementById('displayTotal').innerHTML = \`₱\${total.toFixed(2)}\`;
-    }
-    
-    async function processOrder() {
-        const firstName = document.getElementById('firstName')?.value.trim();
-        const lastName = document.getElementById('lastName')?.value.trim();
-        const email = document.getElementById('emailAddress')?.value.trim();
-        
-        if (!firstName || !lastName || !email) {
-            alert("Please fill in all required fields");
-            return;
-        }
-        
-        const btn = document.querySelector('.btn-pay');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
+    function processPayment() {
+        const btn = document.querySelector('button');
+        btn.innerHTML = '⏳ Processing...';
         btn.disabled = true;
         
-        // Send order to backend
-        try {
-            await fetch('/api/create-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    orderId: orderId,
-                    items: orderItems,
-                    subtotal: subtotal,
-                    discount: promoDiscount,
-                    tip: selectedTip,
-                    total: subtotal - promoDiscount + selectedTip,
-                    robloxUser: robloxUser,
-                    customerEmail: email,
-                    customerName: firstName + ' ' + lastName
-                })
-            });
-        } catch(e) { console.error(e); }
-        
-        // Simulate payment processing
         setTimeout(() => {
             const separator = returnUrl.includes('?') ? '&' : '?';
-            window.location.href = \`\${returnUrl}\${separator}payment=success&order_id=\${orderId}\`;
-        }, 2000);
+            window.location.href = `${returnUrl}${separator}payment=success&order_id=${orderData.orderId}`;
+        }, 1500);
     }
     
-    // Initialize page
-    renderCheckout();
+    displayOrder();
 </script>
 </body>
-</html>\`);
-});
-
-app.listen(PORT, () => {
-    console.log(`✅ ECHOKNIVES Payment Server running on port ${PORT}`);
-    console.log(`🔗 Linked to shop: https://echoknives.onrender.com`);
-    console.log(`📱 Payment URL: https://echoknivesmm2.onrender.com`);
-});
+</html>
