@@ -1,126 +1,429 @@
-<!DOCTYPE html>
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Enable CORS for your shop
+app.use(cors({
+    origin: ['https://echoknives.onrender.com', 'http://localhost:3000'],
+    credentials: true
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(__dirname));
+
+// Store orders temporarily (in production, use a database)
+const orders = new Map();
+
+// API: Receive order from shop
+app.post('/api/create-order', (req, res) => {
+    const orderData = req.body;
+    const orderId = orderData.orderId || 'ORD-' + Date.now();
+    orders.set(orderId, {
+        ...orderData,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+    });
+    console.log(`📦 Order received: ${orderId}`);
+    console.log(`   Items: ${orderData.items?.length || 0}`);
+    console.log(`   Total: ₱${orderData.subtotal}`);
+    console.log(`   Roblox: ${orderData.robloxUser}`);
+    res.json({ success: true, orderId: orderId });
+});
+
+// API: Get order status
+app.get('/api/order/:orderId', (req, res) => {
+    const order = orders.get(req.params.orderId);
+    if (order) {
+        res.json({ success: true, order });
+    } else {
+        res.json({ success: false, error: 'Order not found' });
+    }
+});
+
+// API: Payment success callback
+app.post('/api/payment-success', (req, res) => {
+    const { orderId, transactionId } = req.body;
+    if (orders.has(orderId)) {
+        const order = orders.get(orderId);
+        order.status = 'completed';
+        order.transactionId = transactionId;
+        order.completedAt = new Date().toISOString();
+        orders.set(orderId, order);
+        console.log(`✅ Payment completed: ${orderId}`);
+        res.json({ success: true });
+    } else {
+        res.json({ success: false });
+    }
+});
+
+// Health check
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', message: 'Payment site is running' });
+});
+
+// ========== MAIN PAYMENT PAGE ==========
+app.get('/', (req, res) => {
+    res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>ECHOKNIVES | Premium MM2 Shop</title>
+    <title>ECHOKNIVES | Secure Checkout</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK (Authentication) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
-        
-        const firebaseConfig = {
-            apiKey: "AIzaSyBAn0pSAeYVXlpBFElUvFWeCdmMduRDLss",
-            authDomain: "echoknifes-5360c.firebaseapp.com",
-            projectId: "echoknifes-5360c",
-            storageBucket: "echoknifes-5360c.firebasestorage.app",
-            messagingSenderId: "86064144525",
-            appId: "1:86064144525:web:9a8dee636295e840c242c4"
-        };
-        
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-        
-        window.firebaseAuth = auth;
-        window.firebaseProvider = provider;
-        window.firebaseSignOut = signOut;
-        window.firebaseSignInWithPopup = signInWithPopup;
-        
-        onAuthStateChanged(auth, (user) => {
-            if (window.handleAuthStateChanged) {
-                window.handleAuthStateChanged(user);
-            }
-        });
-        
-        window.dispatchEvent(new Event('firebase-ready'));
-    </script>
-    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f0c29 0%, #1a1a3e 50%, #0f0c29 100%); color: #fff; overflow-x: hidden; min-height: 100vh; }
-        .animated-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: radial-gradient(circle at 20% 50%, #0f0c29 0%, #1a1a3e 50%, #0f0c29 100%); }
-        .glow-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.3; z-index: -1; animation: float 25s infinite ease-in-out; }
-        .orb-1 { width: 600px; height: 600px; background: #6c5ce7; top: -300px; left: -300px; }
-        .orb-2 { width: 500px; height: 500px; background: #a855f7; bottom: -250px; right: -250px; animation-delay: 5s; }
-        @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(50px, -50px) scale(1.1); } 66% { transform: translate(-30px, 30px) scale(0.9); } }
-        .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
-        .particle { position: absolute; background: rgba(108, 92, 231, 0.3); border-radius: 50%; pointer-events: none; animation: particleFloat 20s infinite linear; }
-        @keyframes particleFloat { 0% { transform: translateY(100vh) translateX(0); opacity: 0; } 10% { opacity: 0.5; } 90% { opacity: 0.5; } 100% { transform: translateY(-100vh) translateX(50px); opacity: 0; } }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1a1a3e; }
-        ::-webkit-scrollbar-thumb { background: #6c5ce7; border-radius: 10px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        .header { background: rgba(15, 12, 41, 0.85); backdrop-filter: blur(10px); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(108, 92, 231, 0.3); flex-wrap: wrap; gap: 15px; }
-        .logo { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-        .logo-icon { font-size: 32px; color: #6c5ce7; }
-        .logo-text { font-family: 'Orbitron', monospace; font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #fff, #a855f7); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .nav-links { display: flex; gap: 10px; background: rgba(108, 92, 231, 0.1); padding: 5px; border-radius: 50px; }
-        .nav-link { padding: 8px 24px; border-radius: 40px; cursor: pointer; font-weight: 600; color: #ccc; background: transparent; border: none; }
-        .nav-link:hover, .nav-link.active { background: #6c5ce7; color: white; }
-        .top-right { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        .points-display { background: linear-gradient(135deg, #f59e0b, #d97706); padding: 8px 16px; border-radius: 40px; display: flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer; }
-        .currency-selector { background: rgba(108, 92, 231, 0.2); border: 1px solid rgba(108, 92, 231, 0.3); border-radius: 30px; padding: 8px 16px; }
-        .currency-selector select { background: transparent; border: none; color: white; cursor: pointer; outline: none; }
-        .user-info { display: flex; align-items: center; gap: 10px; background: rgba(108, 92, 231, 0.2); border: 1px solid rgba(108, 92, 231, 0.3); padding: 5px 15px; border-radius: 40px; cursor: pointer; }
-        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #6c5ce7; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .cart-icon { position: relative; cursor: pointer; background: rgba(108, 92, 231, 0.2); padding: 8px 16px; border-radius: 40px; }
-        .cart-count { position: absolute; top: -5px; right: -5px; background: #ef4444; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #1a1a3e 50%, #0f0c29 100%);
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
 
-        .hero { min-height: 85vh; display: flex; align-items: center; justify-content: space-between; padding: 60px 5%; flex-wrap: wrap; gap: 50px; }
-        .hero-content { flex: 1; min-width: 300px; animation: fadeInUp 0.6s ease; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .hero-title { font-size: 58px; font-weight: 800; font-family: 'Orbitron', monospace; }
-        .hero-title span { background: linear-gradient(135deg, #6c5ce7, #a855f7); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .btn-primary { background: linear-gradient(135deg, #6c5ce7, #a855f7); border: none; padding: 14px 35px; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; }
-        .hero-image img { max-width: 100%; filter: drop-shadow(0 0 40px rgba(108,92,231,0.3)); border-radius: 20px; animation: floatImage 4s ease-in-out infinite; }
-        @keyframes floatImage { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(circle at 20% 50%, #0f0c29 0%, #1a1a3e 50%, #0f0c29 100%);
+        }
 
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px 5%; }
-        .filter-bar { background: rgba(0,0,0,0.5); padding: 12px 20px; margin-bottom: 25px; border-radius: 50px; display: flex; gap: 10px; overflow-x: auto; }
-        .filter-btn { background: rgba(255,255,255,0.1); border: none; padding: 8px 20px; border-radius: 30px; color: white; cursor: pointer; }
-        .filter-btn.active { background: #6c5ce7; }
+        .glow-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            z-index: -1;
+            animation: float 25s infinite ease-in-out;
+        }
 
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
-        .product-card { background: linear-gradient(135deg, rgba(30,20,25,0.9), rgba(20,15,20,0.95)); border-radius: 20px; overflow: hidden; border: 1px solid rgba(108,92,231,0.2); transition: all 0.3s ease; }
-        .product-card:hover { transform: translateY(-8px); border-color: #6c5ce7; }
-        .product-image { padding: 20px; text-align: center; }
-        .product-image img { width: 100px; height: 100px; object-fit: contain; }
-        .product-info { padding: 18px; text-align: center; }
-        .product-name { font-size: 18px; font-weight: 700; }
-        .product-price { font-size: 24px; font-weight: 800; color: #6c5ce7; margin: 10px 0; }
-        .add-btn { width: 100%; padding: 10px; background: linear-gradient(135deg, #6c5ce7, #a855f7); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; }
+        .orb-1 { width: 400px; height: 400px; background: #6c5ce7; top: -200px; left: -200px; }
+        .orb-2 { width: 350px; height: 350px; background: #a855f7; bottom: -150px; right: -150px; animation-delay: 5s; }
 
-        .cart-sidebar { position: fixed; top: 0; right: -450px; width: 450px; height: 100vh; background: rgba(15, 12, 41, 0.98); backdrop-filter: blur(20px); z-index: 1000; transition: right 0.3s; padding: 25px; display: flex; flex-direction: column; border-left: 2px solid #6c5ce7; }
-        .cart-sidebar.open { right: 0; }
-        .cart-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .close-cart { background: none; border: none; font-size: 28px; cursor: pointer; color: #6c5ce7; }
-        .cart-items { flex: 1; overflow-y: auto; }
-        .cart-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .cart-total { margin-top: 20px; padding-top: 15px; border-top: 2px solid #6c5ce7; font-size: 22px; font-weight: 800; }
-        .checkout-btn { width: 100%; padding: 15px; background: #10b981; border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; margin-top: 15px; }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, -30px); }
+        }
 
-        .roblox-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); backdrop-filter: blur(20px); z-index: 3000; display: none; justify-content: center; align-items: center; }
-        .roblox-modal.show { display: flex; }
-        .roblox-content { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 30px; padding: 35px; width: 90%; max-width: 500px; text-align: center; border: 1px solid #6c5ce7; }
-        .roblox-avatar { width: 120px; height: 120px; border-radius: 50%; background: #1e1e3a; margin: 0 auto 15px; overflow: hidden; border: 3px solid #6c5ce7; }
-        .roblox-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .roblox-input { width: 100%; padding: 14px; background: rgba(255,255,255,0.1); border: 1px solid rgba(108,92,231,0.3); border-radius: 60px; color: white; text-align: center; margin: 20px 0; }
-        .button-group { display: flex; gap: 15px; }
-        .btn-blue { flex: 1; background: #3b82f6; border: none; padding: 14px; border-radius: 60px; color: white; font-weight: 700; cursor: pointer; }
-        .btn-red { flex: 1; background: #ef4444; border: none; padding: 14px; border-radius: 60px; color: white; font-weight: 700; cursor: pointer; }
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
 
-        .toast { position: fixed; bottom: 30px; left: 30px; background: #10b981; padding: 12px 24px; border-radius: 12px; z-index: 2000; transform: translateX(-400px); transition: transform 0.3s; }
-        .toast.show { transform: translateX(0); }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; display: none; }
-        .overlay.show { display: block; }
+        .particle {
+            position: absolute;
+            background: rgba(108, 92, 231, 0.3);
+            border-radius: 50%;
+            animation: particleFloat 15s infinite linear;
+        }
 
-        @media (max-width: 768px) { .cart-sidebar { width: 100%; right: -100%; } .hero-title { font-size: 38px; } .products-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); } }
+        @keyframes particleFloat {
+            0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+        }
+
+        .checkout-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(15, 12, 41, 0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 40px;
+            overflow: hidden;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .checkout-header {
+            background: linear-gradient(135deg, #6c5ce7, #a855f7);
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .checkout-header h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .security-badge {
+            background: rgba(0,0,0,0.3);
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 12px;
+        }
+
+        .checkout-two-col {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .checkout-left {
+            flex: 1.2;
+            padding: 30px;
+            border-right: 1px solid rgba(108, 92, 231, 0.2);
+        }
+
+        .checkout-right {
+            flex: 0.8;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #a855f7;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            border-radius: 30px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #6c5ce7;
+            background: rgba(108, 92, 231, 0.1);
+        }
+
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .payment-methods-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .payment-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            border-radius: 30px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .payment-option:hover {
+            background: rgba(108, 92, 231, 0.2);
+            transform: scale(1.02);
+        }
+
+        .payment-option.selected {
+            background: #6c5ce7;
+            border-color: #6c5ce7;
+        }
+
+        .payment-option i {
+            margin-right: 8px;
+        }
+
+        .tip-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .tip-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tip-btn:hover, .tip-btn.selected {
+            background: #6c5ce7;
+            border-color: #6c5ce7;
+        }
+
+        .promo-section {
+            background: rgba(108, 92, 231, 0.1);
+            border-radius: 20px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .promo-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .promo-input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            border-radius: 30px;
+            color: white;
+        }
+
+        .apply-promo {
+            background: #6c5ce7;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .apply-promo:hover {
+            background: #a855f7;
+        }
+
+        .order-items {
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .order-total {
+            padding-top: 15px;
+            border-top: 2px solid #6c5ce7;
+        }
+
+        .order-total div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .grand-total {
+            font-size: 22px;
+            font-weight: 800;
+            color: #6c5ce7;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(108, 92, 231, 0.3);
+        }
+
+        .roblox-info {
+            background: rgba(108, 92, 231, 0.15);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+        }
+
+        .btn-pay {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            border-radius: 60px;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-pay:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-pay:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(108, 92, 231, 0.3);
+            border-top-color: #6c5ce7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-box {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-two-col { flex-direction: column; }
+            .checkout-left { border-right: none; border-bottom: 1px solid rgba(108, 92, 231, 0.2); }
+            .row-2 { grid-template-columns: 1fr; }
+            .payment-methods-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -130,261 +433,282 @@
 <div class="glow-orb orb-2"></div>
 <div class="particles" id="particles"></div>
 
-<div class="header">
-    <div class="logo" onclick="showHome()"><i class="fas fa-gem logo-icon"></i><div><div class="logo-text">ECHOKNIVES</div><div class="logo-sub">PREMIUM MM2 SHOP</div></div></div>
-    <div class="nav-links"><button class="nav-link active" onclick="showHome()">🏠 Home</button><button class="nav-link" onclick="showShop()">🛒 Shop</button></div>
-    <div class="top-right">
-        <div class="points-display"><i class="fas fa-star"></i> <span id="pointsBalance">0</span> pts</div>
-        <div class="currency-selector"><i class="fas fa-money-bill-wave"></i><select id="currencySelect" onchange="changeCurrency()"><option value="PHP">🇵🇭 PHP</option><option value="USD">🇺🇸 USD</option></select></div>
-        <div class="user-info" id="userInfo" onclick="performGoogleLogin()"><div class="user-avatar" id="userAvatarDisplay"><i class="fas fa-user"></i></div><span id="userNameDisplay">Guest</span></div>
-        <div class="cart-icon" onclick="toggleCart()"><i class="fas fa-shopping-cart"></i><span class="cart-count" id="cartCount">0</span></div>
+<div class="checkout-container">
+    <div class="checkout-header">
+        <h2><i class="fas fa-lock"></i> Secure Checkout</h2>
+        <div class="security-badge"><i class="fas fa-shield-alt"></i> 256-bit SSL Secure</div>
+    </div>
+    
+    <div id="mainContent" class="loading">
+        <div class="spinner"></div>
+        <p style="margin-top: 20px;">Loading your order...</p>
     </div>
 </div>
-
-<div id="homePage" class="hero">
-    <div class="hero-content"><h1 class="hero-title">RARE <span>MM2</span><br>ITEMS</h1><p class="hero-desc" style="color:#aaa; margin:20px 0;">Secure payments, fast delivery, earn points!</p><button class="btn-primary" onclick="showShop()">Shop Now →</button></div>
-    <div class="hero-image"><img src="https://i.imgur.com/hP2t6wb.jpeg" alt="MM2 Hero"></div>
-</div>
-
-<div id="shopPage" class="container" style="display:none;">
-    <div class="filter-bar"><button class="filter-btn active" data-filter="all">All</button><button class="filter-btn" data-filter="knife">🔪 Knives</button><button class="filter-btn" data-filter="gun">🔫 Guns</button></div>
-    <div class="products-grid" id="productsGrid"></div>
-</div>
-
-<div class="overlay" id="overlay" onclick="closeCart()"></div>
-<div class="cart-sidebar" id="cartSidebar">
-    <div class="cart-header"><h3>Your Cart</h3><button class="close-cart" onclick="closeCart()">×</button></div>
-    <div class="cart-items" id="cartItemsList"></div>
-    <div class="cart-total" id="cartTotal">Total: ₱0</div>
-    <button class="checkout-btn" onclick="openRobloxVerification()">Proceed to Checkout →</button>
-</div>
-
-<div class="roblox-modal" id="robloxModal">
-    <div class="roblox-content">
-        <h2><i class="fab fa-roblox"></i> Verify Roblox Account</h2>
-        <div class="roblox-avatar"><img id="robloxAvatarImg" src="https://ui-avatars.com/api/?name=Roblox&background=6c5ce7&color=fff&size=120" alt="Avatar"></div>
-        <div id="robloxDisplayName" style="font-size:18px; margin-bottom:20px;">Enter your username</div>
-        <input type="text" id="robloxUsernameInput" class="roblox-input" placeholder="Roblox Username">
-        <div class="button-group"><button class="btn-blue" onclick="confirmRobloxAndCheckout()">✅ Yes, That's me!</button><button class="btn-red" onclick="resetRobloxUsername()">❌ No, not me</button></div>
-    </div>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-    // ========== MM2 ITEMS ==========
-    const items = [
-        { id: 1, name: "Batwing", type: "knife", price: 152, image: "https://i.imgur.com/H6CL03y.jpeg" },
-        { id: 2, name: "Harvester", type: "knife", price: 608, image: "https://i.imgur.com/jZkbQ4t.jpeg" },
-        { id: 3, name: "Icewing", type: "knife", price: 72, image: "https://i.imgur.com/jiwvmxq.jpeg" },
-        { id: 4, name: "Luger", type: "gun", price: 207, image: "https://i.imgur.com/eEvMBRh.jpeg" },
-        { id: 5, name: "Darkbringer", type: "gun", price: 92000, image: "https://i.imgur.com/8oxgzwa.jpeg" },
-        { id: 6, name: "Lightbringer", type: "gun", price: 92000, image: "https://i.imgur.com/BUljuYV.jpeg" }
-    ];
-
-    let cart = [];
-    let currentFilter = "all";
-    let isLoggedIn = false;
-    let currentUser = null;
-    let currentCurrency = "PHP";
-    let exchangeRates = { PHP: 1, USD: 0.017 };
-    let symbols = { PHP: "₱", USD: "$" };
-    let userPoints = 0;
-    let verifiedRobloxUser = null;
-    const MIDDLEMAN_URL = "https://roblox-middlemanbot1.onrender.com";
-    const PAYMENT_URL = "https://echoknivesmm2.onrender.com";
-
-    function getDisplayPrice(p) { return (p * exchangeRates[currentCurrency]).toFixed(2); }
-    function getSymbol() { return symbols[currentCurrency]; }
-    function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
-    function changeCurrency() { currentCurrency = document.getElementById('currencySelect').value; renderProducts(); updateCartUI(); }
-    function showHome() { document.getElementById('homePage').style.display = 'flex'; document.getElementById('shopPage').style.display = 'none'; }
-    function showShop() { document.getElementById('homePage').style.display = 'none'; document.getElementById('shopPage').style.display = 'block'; renderProducts(); }
-
-    function renderProducts() {
-        let f = items.filter(i => { if (currentFilter === 'knife') return i.type === 'knife'; if (currentFilter === 'gun') return i.type === 'gun'; return true; });
-        document.getElementById('productsGrid').innerHTML = f.map(item => `
-            <div class="product-card"><div class="product-image"><img src="${item.image}"></div><div class="product-info"><div class="product-name">${item.name}</div><div class="product-price">${getSymbol()}${getDisplayPrice(item.price)}</div><button class="add-btn" onclick="addToCart(${item.id})">Add to Cart</button></div></div>
-        `).join('');
-    }
-
-    function addToCart(id) {
-        if (!isLoggedIn) { showToast("Login first"); performGoogleLogin(); return; }
-        const item = items.find(i => i.id === id);
-        const existing = cart.find(i => i.id === id);
-        if (existing) existing.quantity++;
-        else cart.push({ ...item, quantity: 1 });
-        updateCartUI();
-        showToast(`${item.name} added`);
-    }
-
-    function updateCartUI() {
-        let total = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-        const count = cart.reduce((s, i) => s + i.quantity, 0);
-        document.getElementById('cartCount').innerText = count;
-        document.getElementById('cartTotal').innerHTML = `Total: ${getSymbol()}${getDisplayPrice(total)}`;
-        const c = document.getElementById('cartItemsList');
-        if (cart.length === 0) { c.innerHTML = '<p style="text-align:center;">Cart empty</p>'; return; }
-        c.innerHTML = cart.map(item => `
-            <div class="cart-item"><div><strong>${item.name}</strong><br>${getSymbol()}${getDisplayPrice(item.price)} x${item.quantity}</div>
-            <div><button onclick="updateQty(${item.id}, ${item.quantity-1})">-</button> <span style="margin:0 8px;">${item.quantity}</span> <button onclick="updateQty(${item.id}, ${item.quantity+1})">+</button> <button onclick="removeFromCart(${item.id})"><i class="fas fa-trash"></i></button></div></div>
-        `).join('');
-    }
-
-    function updateQty(id, n) { if (n <= 0) removeFromCart(id); else { const i = cart.find(i => i.id === id); if (i) i.quantity = n; updateCartUI(); } }
-    function removeFromCart(id) { cart = cart.filter(i => i.id !== id); updateCartUI(); }
-    function toggleCart() { document.getElementById('cartSidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
-    function closeCart() { document.getElementById('cartSidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-
-    // ========== ROBLOX VERIFICATION ==========
-    async function fetchRobloxAvatar(username) {
-        if (!username) return;
-        const img = document.getElementById('robloxAvatarImg');
-        const display = document.getElementById('robloxDisplayName');
-        img.src = "https://ui-avatars.com/api/?name=Loading&background=f59e0b&color=fff&size=120";
-        display.innerHTML = `🔍 Looking up @${username}...`;
+    // ========== GET ORDER DATA FROM URL (SENT BY SHOP) ==========
+    const urlParams = new URLSearchParams(window.location.search);
+    const cartParam = urlParams.get('cart');
+    const robloxUser = urlParams.get('roblox');
+    const orderId = urlParams.get('order_id');
+    const returnUrl = urlParams.get('return') || 'https://echoknives.onrender.com';
+    
+    let orderItems = [];
+    let subtotal = 0;
+    
+    // Parse cart data from URL
+    if (cartParam) {
         try {
-            const res = await fetch(`${MIDDLEMAN_URL}/api/roblox/${encodeURIComponent(username)}`);
-            const data = await res.json();
-            if (data.success && data.avatarUrl) {
-                img.src = data.avatarUrl;
-                display.innerHTML = `✅ @${data.username}`;
-                window.pendingRobloxData = data;
-            } else {
-                img.src = "https://ui-avatars.com/api/?name=Not+Found&background=ef4444&color=fff&size=120";
-                display.innerHTML = "❌ User not found";
-                window.pendingRobloxData = null;
-            }
+            orderItems = JSON.parse(decodeURIComponent(cartParam));
+            subtotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            console.log('✅ Order loaded from URL:', orderItems);
         } catch(e) {
-            img.src = "https://ui-avatars.com/api/?name=Error&background=ef4444&color=fff&size=120";
-            display.innerHTML = "❌ Connection error";
+            console.error('Parse error:', e);
         }
     }
-
-    function openRobloxVerification() {
-        if (!isLoggedIn) { showToast("Login first"); performGoogleLogin(); return; }
-        if (cart.length === 0) { showToast("Cart empty"); return; }
-        const saved = localStorage.getItem('verifiedRoblox');
+    
+    // If no data in URL, check sessionStorage (fallback)
+    if (orderItems.length === 0) {
+        const saved = sessionStorage.getItem('echoknives_order');
         if (saved) {
             try {
-                const u = JSON.parse(saved);
-                document.getElementById('robloxUsernameInput').value = u.username;
-                fetchRobloxAvatar(u.username);
-                return;
+                const data = JSON.parse(saved);
+                orderItems = data.items || [];
+                subtotal = data.subtotal || 0;
+                console.log('✅ Order loaded from sessionStorage');
             } catch(e) {}
         }
-        document.getElementById('robloxUsernameInput').value = '';
-        document.getElementById('robloxAvatarImg').src = "https://ui-avatars.com/api/?name=Roblox&background=6c5ce7&color=fff&size=120";
-        document.getElementById('robloxDisplayName').innerHTML = "Enter your username";
-        document.getElementById('robloxModal').classList.add('show');
-        closeCart();
-        
-        let timer;
-        document.getElementById('robloxUsernameInput').oninput = function() {
-            clearTimeout(timer);
-            timer = setTimeout(() => { if(this.value.trim().length > 2) fetchRobloxAvatar(this.value.trim()); }, 500);
-        };
     }
-
-    function resetRobloxUsername() {
-        document.getElementById('robloxUsernameInput').value = '';
-        document.getElementById('robloxAvatarImg').src = "https://ui-avatars.com/api/?name=Roblox&background=6c5ce7&color=fff&size=120";
-        document.getElementById('robloxDisplayName').innerHTML = "Enter your username";
-        showToast("Please enter correct username");
+    
+    // Demo fallback (only if absolutely no data)
+    if (orderItems.length === 0) {
+        orderItems = [
+            { name: "Batwing", price: 152, quantity: 1, total: 152 },
+            { name: "Harvester", price: 608, quantity: 1, total: 608 },
+            { name: "Icewing", price: 72, quantity: 2, total: 144 }
+        ];
+        subtotal = 904;
+        document.getElementById('mainContent').innerHTML = \`
+            <div class="error-box">
+                <i class="fas fa-exclamation-triangle" style="font-size: 40px; margin-bottom: 10px;"></i>
+                <p>⚠️ Demo Mode - No cart data received from shop.</p>
+                <p style="font-size: 12px; margin-top: 10px;">Make sure you came from the shop site.</p>
+            </div>
+        \`;
     }
-
-    function confirmRobloxAndCheckout() {
-        const username = document.getElementById('robloxUsernameInput').value.trim();
-        if (!username) { showToast("Enter Roblox username"); return; }
-        if (!window.pendingRobloxData) { showToast("Wait for avatar to load"); return; }
-        const userData = window.pendingRobloxData;
-        localStorage.setItem('verifiedRoblox', JSON.stringify(userData));
-        verifiedRobloxUser = userData;
-        document.getElementById('robloxModal').classList.remove('show');
+    
+    // Variables for checkout
+    let selectedPayment = "paypal";
+    let selectedTip = 0;
+    let promoApplied = false;
+    let promoDiscount = 0;
+    let promoCodeEntered = "";
+    
+    function renderCheckout() {
+        const itemsHtml = orderItems.map(item => \`
+            <div class="order-item">
+                <span>\${item.name} x\${item.quantity}</span>
+                <span>₱\${(item.price * item.quantity).toFixed(2)}</span>
+            </div>
+        \`).join('');
         
-        // ========== SEND ORDER TO PAYMENT SITE ==========
-        const orderData = {
-            orderId: 'ECHO-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 6),
-            items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity, total: i.price * i.quantity })),
-            subtotal: cart.reduce((s, i) => s + (i.price * i.quantity), 0),
-            robloxUser: userData.username,
-            robloxDisplayName: userData.displayName,
-            customerEmail: currentUser?.email || '',
-            customerName: currentUser?.displayName || '',
-            currency: currentCurrency,
-            symbol: getSymbol(),
-            timestamp: Date.now()
-        };
+        const total = subtotal - promoDiscount + selectedTip;
         
-        // Save to sessionStorage
-        sessionStorage.setItem('echoknives_order', JSON.stringify(orderData));
+        document.getElementById('mainContent').innerHTML = \`
+            <div class="checkout-two-col">
+                <div class="checkout-left">
+                    <div class="section-title"><i class="fas fa-user"></i> Contact Information</div>
+                    <div class="row-2">
+                        <div class="form-group"><label>First Name</label><input type="text" id="firstName" placeholder="John"></div>
+                        <div class="form-group"><label>Last Name</label><input type="text" id="lastName" placeholder="Doe"></div>
+                    </div>
+                    <div class="row-2">
+                        <div class="form-group"><label>Email Address</label><input type="email" id="emailAddress" placeholder="your@email.com"></div>
+                        <div class="form-group"><label>🎮 Roblox Username</label><input type="text" id="robloxUsername" value="\${robloxUser || ''}" placeholder="Your Roblox username" readonly style="background:rgba(108,92,231,0.2);"></div>
+                    </div>
+                    
+                    <div class="section-title" style="margin-top: 24px;"><i class="fas fa-map-marker-alt"></i> Billing Address</div>
+                    <div class="row-2">
+                        <div class="form-group"><label>Country</label><select id="country"><option value="PH">🇵🇭 Philippines</option><option value="US">🇺🇸 US</option><option value="GB">🇬🇧 UK</option></select></div>
+                        <div class="form-group"><label>State</label><input type="text" id="state" placeholder="State"></div>
+                    </div>
+                    <div class="form-group"><label>Street Address</label><input type="text" id="address" placeholder="Street address"></div>
+                    <div class="row-2">
+                        <div class="form-group"><label>ZIP Code</label><input type="text" id="zip" placeholder="ZIP"></div>
+                        <div class="form-group"><label>City</label><input type="text" id="city" placeholder="City"></div>
+                    </div>
+                    
+                    <div class="section-title" style="margin-top: 24px;"><i class="fas fa-credit-card"></i> Payment Method</div>
+                    <div class="payment-methods-grid">
+                        <div class="payment-option" data-payment="credit" onclick="selectPayment('credit')"><i class="fab fa-cc-visa"></i> Credit Card</div>
+                        <div class="payment-option" data-payment="debit" onclick="selectPayment('debit')"><i class="fas fa-credit-card"></i> Debit Card</div>
+                        <div class="payment-option" data-payment="gcash" onclick="selectPayment('gcash')"><i class="fas fa-mobile-alt"></i> GCash</div>
+                        <div class="payment-option selected" data-payment="paypal" onclick="selectPayment('paypal')"><i class="fab fa-paypal"></i> PayPal</div>
+                        <div class="payment-option" data-payment="mastercard" onclick="selectPayment('mastercard')"><i class="fab fa-cc-mastercard"></i> Mastercard</div>
+                    </div>
+                    
+                    <div class="section-title" style="margin-top: 24px;"><i class="fas fa-gift"></i> Support the Team</div>
+                    <div class="tip-options">
+                        <button type="button" class="tip-btn" data-tip="0" onclick="selectTip(0)">No tip</button>
+                        <button type="button" class="tip-btn" data-tip="50" onclick="selectTip(50)">₱50</button>
+                        <button type="button" class="tip-btn" data-tip="100" onclick="selectTip(100)">₱100</button>
+                        <button type="button" class="tip-btn" data-tip="250" onclick="selectTip(250)">₱250</button>
+                        <button type="button" class="tip-btn" data-tip="500" onclick="selectTip(500)">₱500</button>
+                        <input type="number" id="customTip" class="tip-custom" placeholder="Custom ₱" min="0" step="10" oninput="onCustomTip()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(108,92,231,0.3); border-radius:30px; padding:8px 16px; width:100px; color:white;">
+                    </div>
+                    
+                    <div class="section-title" style="margin-top: 24px;"><i class="fas fa-ticket-alt"></i> Promo Code</div>
+                    <div class="promo-section">
+                        <div class="promo-input-group">
+                            <input type="text" id="promoCodeInput" class="promo-input" placeholder="Enter promo code">
+                            <button class="apply-promo" onclick="applyPromoCode()">Apply</button>
+                        </div>
+                        <div id="promoMessage" style="font-size:12px; margin-top:10px;"></div>
+                    </div>
+                </div>
+                
+                <div class="checkout-right">
+                    <div class="section-title"><i class="fas fa-shopping-cart"></i> Order Summary</div>
+                    <div class="roblox-info">
+                        <i class="fab fa-roblox"></i> <strong>Delivering to:</strong> @\${robloxUser || 'Not specified'}
+                        <div style="font-size:12px; margin-top:5px;">Order ID: \${orderId || 'Pending'}</div>
+                    </div>
+                    <div class="order-items">
+                        \${itemsHtml}
+                    </div>
+                    <div class="order-total">
+                        <div><span>Subtotal:</span><span id="displaySubtotal">₱\${subtotal.toFixed(2)}</span></div>
+                        <div><span>Discount:</span><span id="displayDiscount">-₱\${promoDiscount.toFixed(2)}</span></div>
+                        <div><span>Tip:</span><span id="displayTip">₱\${selectedTip.toFixed(2)}</span></div>
+                    </div>
+                    <div class="grand-total">
+                        <span>Total:</span>
+                        <span id="displayTotal">₱\${total.toFixed(2)}</span>
+                    </div>
+                    <button class="btn-pay" onclick="processOrder()">
+                        <i class="fas fa-lock"></i> Complete Payment
+                    </button>
+                    <div class="terms" style="font-size: 11px; text-align: center; margin-top: 15px; color: #64748b;">
+                        By completing your purchase, you agree to our Terms of Service
+                    </div>
+                </div>
+            </div>
+        \`;
         
-        // Encode cart for URL
-        const cartParam = encodeURIComponent(JSON.stringify(orderData.items));
-        const returnUrl = encodeURIComponent(window.location.origin + window.location.pathname);
-        
-        // Redirect to payment site with order data
-        window.location.href = `${PAYMENT_URL}?cart=${cartParam}&roblox=${encodeURIComponent(userData.username)}&order_id=${orderData.orderId}&return=${returnUrl}`;
-    }
-
-    // ========== AUTH ==========
-    window.handleAuthStateChanged = function(user) {
-        if (user) {
-            isLoggedIn = true;
-            currentUser = user;
-            document.getElementById('userNameDisplay').innerText = user.displayName || user.email?.split('@')[0];
-            document.getElementById('userAvatarDisplay').innerHTML = user.photoURL ? `<img src="${user.photoURL}">` : `<i class="fas fa-user"></i>`;
-            showToast(`Welcome ${user.displayName || 'User'}!`);
-            const saved = localStorage.getItem('verifiedRoblox');
-            if (saved) {
-                try { verifiedRobloxUser = JSON.parse(saved); } catch(e) {}
+        // Highlight selected payment
+        document.querySelectorAll('.payment-option').forEach(opt => {
+            if (opt.dataset.payment === selectedPayment) {
+                opt.classList.add('selected');
             }
-        } else {
-            isLoggedIn = false;
-            currentUser = null;
-            document.getElementById('userNameDisplay').innerText = 'Guest';
-            document.getElementById('userAvatarDisplay').innerHTML = `<i class="fas fa-user"></i>`;
-        }
-        renderProducts();
-    };
-
-    async function performGoogleLogin() {
-        if (window.firebaseAuth) {
-            try { await window.firebaseSignInWithPopup(window.firebaseAuth, window.firebaseProvider); } 
-            catch(e) { showToast("Login failed"); }
-        } else { showToast("Loading..."); }
-    }
-
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter = btn.dataset.filter;
-            renderProducts();
         });
-    });
-
-    function createParticles() {
-        const c = document.getElementById('particles');
-        for (let i = 0; i < 60; i++) {
-            const p = document.createElement('div');
-            p.classList.add('particle');
-            p.style.width = (Math.random() * 6 + 2) + 'px';
-            p.style.left = Math.random() * 100 + '%';
-            p.style.animationDelay = Math.random() * 20 + 's';
-            p.style.animationDuration = (Math.random() * 15 + 10) + 's';
-            c.appendChild(p);
-        }
+        
+        // Highlight selected tip
+        document.querySelectorAll('.tip-btn').forEach(btn => {
+            if (parseInt(btn.dataset.tip) === selectedTip) {
+                btn.classList.add('selected');
+            }
+        });
     }
-    createParticles();
-    showHome();
-    renderProducts();
-
-    window.showHome = showHome; window.showShop = showShop; window.addToCart = addToCart; window.updateQty = updateQty;
-    window.removeFromCart = removeFromCart; window.toggleCart = toggleCart; window.closeCart = closeCart;
-    window.changeCurrency = changeCurrency; window.performGoogleLogin = performGoogleLogin;
-    window.openRobloxVerification = openRobloxVerification; window.resetRobloxUsername = resetRobloxUsername;
-    window.confirmRobloxAndCheckout = confirmRobloxAndCheckout;
+    
+    function selectPayment(payment) {
+        selectedPayment = payment;
+        document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+        document.querySelector(\`.payment-option[data-payment="\${payment}"]\`).classList.add('selected');
+    }
+    
+    function selectTip(amount) {
+        selectedTip = amount;
+        document.querySelectorAll('.tip-btn').forEach(btn => btn.classList.remove('selected'));
+        document.querySelector(\`.tip-btn[data-tip="\${amount}"]\`).classList.add('selected');
+        document.getElementById('customTip').value = '';
+        updateTotals();
+    }
+    
+    function onCustomTip() {
+        const val = parseInt(document.getElementById('customTip').value) || 0;
+        selectedTip = val;
+        document.querySelectorAll('.tip-btn').forEach(btn => btn.classList.remove('selected'));
+        updateTotals();
+    }
+    
+    function applyPromoCode() {
+        const code = document.getElementById('promoCodeInput').value.trim().toUpperCase();
+        const messageDiv = document.getElementById('promoMessage');
+        
+        if (code === "STARTER26") {
+            promoApplied = true;
+            promoDiscount = 250;
+            messageDiv.innerHTML = '<span style="color:#10b981;">✅ Promo code applied! -₱250</span>';
+        } else if (code === "WELCOME100") {
+            promoApplied = true;
+            promoDiscount = 100;
+            messageDiv.innerHTML = '<span style="color:#10b981;">✅ Promo code applied! -₱100</span>';
+        } else {
+            promoApplied = false;
+            promoDiscount = 0;
+            messageDiv.innerHTML = '<span style="color:#ef4444;">❌ Invalid promo code</span>';
+        }
+        updateTotals();
+    }
+    
+    function updateTotals() {
+        const total = subtotal - promoDiscount + selectedTip;
+        document.getElementById('displaySubtotal').innerHTML = \`₱\${subtotal.toFixed(2)}\`;
+        document.getElementById('displayDiscount').innerHTML = \`-₱\${promoDiscount.toFixed(2)}\`;
+        document.getElementById('displayTip').innerHTML = \`₱\${selectedTip.toFixed(2)}\`;
+        document.getElementById('displayTotal').innerHTML = \`₱\${total.toFixed(2)}\`;
+    }
+    
+    async function processOrder() {
+        const firstName = document.getElementById('firstName')?.value.trim();
+        const lastName = document.getElementById('lastName')?.value.trim();
+        const email = document.getElementById('emailAddress')?.value.trim();
+        
+        if (!firstName || !lastName || !email) {
+            alert("Please fill in all required fields");
+            return;
+        }
+        
+        const btn = document.querySelector('.btn-pay');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
+        btn.disabled = true;
+        
+        // Send order to backend
+        try {
+            await fetch('/api/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: orderId,
+                    items: orderItems,
+                    subtotal: subtotal,
+                    discount: promoDiscount,
+                    tip: selectedTip,
+                    total: subtotal - promoDiscount + selectedTip,
+                    robloxUser: robloxUser,
+                    customerEmail: email,
+                    customerName: firstName + ' ' + lastName
+                })
+            });
+        } catch(e) { console.error(e); }
+        
+        // Simulate payment processing
+        setTimeout(() => {
+            const separator = returnUrl.includes('?') ? '&' : '?';
+            window.location.href = \`\${returnUrl}\${separator}payment=success&order_id=\${orderId}\`;
+        }, 2000);
+    }
+    
+    // Initialize page
+    renderCheckout();
 </script>
 </body>
-</html>
+</html>\`);
+});
+
+app.listen(PORT, () => {
+    console.log(`✅ ECHOKNIVES Payment Server running on port ${PORT}`);
+    console.log(`🔗 Linked to shop: https://echoknives.onrender.com`);
+    console.log(`📱 Payment URL: https://echoknivesmm2.onrender.com`);
+});
