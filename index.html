@@ -10,77 +10,78 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f0c29 0%, #1a1a3e 50%, #0f0c29 100%);
-            color: #fff;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8edf3 100%);
+            color: #1a1a2e;
             min-height: 100vh;
             padding: 40px 20px;
         }
-        .animated-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: radial-gradient(circle at 20% 50%, #0f0c29 0%, #1a1a3e 50%, #0f0c29 100%); }
+        .animated-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: radial-gradient(circle at 20% 50%, #f0f4f8 0%, #e8edf3 100%); }
         .glow-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.3; z-index: -1; animation: float 25s infinite ease-in-out; }
-        .orb-1 { width: 400px; height: 400px; background: #6c5ce7; top: -200px; left: -200px; }
-        .orb-2 { width: 350px; height: 350px; background: #a855f7; bottom: -150px; right: -150px; animation-delay: 5s; }
+        .orb-1 { width: 400px; height: 400px; background: #87CEEB; top: -200px; left: -200px; }
+        .orb-2 { width: 350px; height: 350px; background: #FFB6C1; bottom: -150px; right: -150px; animation-delay: 5s; }
         @keyframes float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(30px, -30px); } }
         .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
-        .particle { position: absolute; background: rgba(108, 92, 231, 0.3); border-radius: 50%; animation: particleFloat 15s infinite linear; }
+        .particle { position: absolute; background: rgba(135, 206, 235, 0.2); border-radius: 50%; animation: particleFloat 15s infinite linear; }
         @keyframes particleFloat { 0% { transform: translateY(100vh) translateX(0); opacity: 0; } 10% { opacity: 0.5; } 90% { opacity: 0.5; } 100% { transform: translateY(-100vh) translateX(50px); opacity: 0; } }
         
-        .checkout-container { max-width: 1200px; margin: 0 auto; background: rgba(15, 12, 41, 0.85); backdrop-filter: blur(20px); border-radius: 40px; overflow: hidden; border: 1px solid rgba(108, 92, 231, 0.3); }
-        .checkout-header { background: linear-gradient(135deg, #6c5ce7, #a855f7); padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .checkout-header h2 { font-family: 'Orbitron', monospace; font-size: 24px; font-weight: 800; }
-        .security-badge { background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 40px; font-size: 12px; }
+        .checkout-container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 40px; overflow: hidden; border: 1px solid rgba(135, 206, 235, 0.3); box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
+        .checkout-header { background: linear-gradient(135deg, #87CEEB, #FFB6C1); padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .checkout-header h2 { font-family: 'Orbitron', monospace; font-size: 24px; font-weight: 800; color: #1a1a2e; }
+        .security-badge { background: rgba(255,255,255,0.5); padding: 8px 16px; border-radius: 40px; font-size: 12px; color: #1a1a2e; }
         .checkout-two-col { display: flex; flex-wrap: wrap; }
-        .checkout-left { flex: 1.2; padding: 30px; border-right: 1px solid rgba(108, 92, 231, 0.2); }
-        .checkout-right { flex: 0.8; padding: 30px; background: rgba(0, 0, 0, 0.2); }
-        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #a855f7; font-family: 'Orbitron', monospace; }
+        .checkout-left { flex: 1.2; padding: 30px; border-right: 1px solid rgba(135, 206, 235, 0.3); }
+        .checkout-right { flex: 0.8; padding: 30px; background: #fafbfc; }
+        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #87CEEB; font-family: 'Orbitron', monospace; }
         .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-size: 13px; color: #ccc; }
-        .form-group input, .form-group select { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(108,92,231,0.3); border-radius: 30px; color: white; font-size: 14px; }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: #6c5ce7; background: rgba(108,92,231,0.1); }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 13px; color: #666; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 16px; background: white; border: 1px solid rgba(135, 206, 235, 0.5); border-radius: 30px; color: #1a1a2e; font-size: 14px; transition: 0.2s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #87CEEB; box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.2); }
         .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .payment-methods-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; }
-        .payment-option { background: rgba(255,255,255,0.05); border: 1px solid rgba(108,92,231,0.3); border-radius: 30px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; font-size: 14px; }
-        .payment-option:hover, .payment-option.selected { background: #6c5ce7; border-color: #6c5ce7; transform: scale(1.02); }
+        .payment-methods-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px; }
+        .payment-option { background: white; border: 2px solid rgba(135, 206, 235, 0.3); border-radius: 30px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; font-size: 14px; font-weight: 600; color: #1a1a2e; }
+        .payment-option:hover, .payment-option.selected { background: linear-gradient(135deg, #87CEEB, #FFB6C1); border-color: #87CEEB; transform: scale(1.02); color: #1a1a2e; }
         .tip-options { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-        .tip-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(108,92,231,0.3); padding: 8px 16px; border-radius: 30px; cursor: pointer; }
-        .tip-btn:hover, .tip-btn.selected { background: #6c5ce7; }
-        .promo-section { background: rgba(108,92,231,0.1); border-radius: 20px; padding: 15px; margin-top: 20px; }
+        .tip-btn { background: white; border: 1px solid rgba(135, 206, 235, 0.3); padding: 8px 16px; border-radius: 30px; cursor: pointer; color: #1a1a2e; transition: 0.2s; }
+        .tip-btn:hover, .tip-btn.selected { background: #87CEEB; border-color: #87CEEB; }
+        .promo-section { background: rgba(135, 206, 235, 0.1); border-radius: 20px; padding: 15px; margin-top: 20px; }
         .promo-input-group { display: flex; gap: 10px; }
-        .promo-input { flex: 1; padding: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(108,92,231,0.3); border-radius: 30px; color: white; }
-        .apply-promo { background: #6c5ce7; border: none; padding: 12px 20px; border-radius: 30px; color: white; cursor: pointer; }
+        .promo-input { flex: 1; padding: 12px; background: white; border: 1px solid rgba(135, 206, 235, 0.3); border-radius: 30px; color: #1a1a2e; }
+        .apply-promo { background: linear-gradient(135deg, #87CEEB, #FFB6C1); border: none; padding: 12px 20px; border-radius: 30px; color: #1a1a2e; font-weight: 600; cursor: pointer; }
         .order-items { margin-bottom: 20px; max-height: 300px; overflow-y: auto; }
-        .order-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .order-total { padding-top: 15px; border-top: 2px solid #6c5ce7; }
+        .order-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.08); }
+        .order-total { padding-top: 15px; border-top: 2px solid #87CEEB; }
         .order-total div { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .grand-total { font-size: 22px; font-weight: 800; color: #6c5ce7; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(108,92,231,0.3); }
-        .roblox-info { background: rgba(108,92,231,0.15); border-radius: 20px; padding: 15px; margin-bottom: 20px; text-align: center; border: 1px solid rgba(108,92,231,0.3); }
-        .btn-pay { width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 60px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 20px; transition: all 0.3s ease; }
-        .btn-pay:hover { transform: scale(1.02); box-shadow: 0 10px 25px rgba(16,185,129,0.3); }
+        .grand-total { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #87CEEB, #FFB6C1); -webkit-background-clip: text; background-clip: text; color: transparent; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(135, 206, 235, 0.3); }
+        .roblox-info { background: rgba(135, 206, 235, 0.1); border-radius: 20px; padding: 15px; margin-bottom: 20px; text-align: center; border: 1px solid rgba(135, 206, 235, 0.3); color: #1a1a2e; }
+        .btn-pay { width: 100%; padding: 16px; background: linear-gradient(135deg, #87CEEB, #FFB6C1); border: none; border-radius: 60px; color: #1a1a2e; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 20px; transition: all 0.3s ease; }
+        .btn-pay:hover { transform: scale(1.02); box-shadow: 0 10px 25px rgba(135, 206, 235, 0.3); }
+        .btn-robux { background: linear-gradient(135deg, #FFB6C1, #87CEEB); }
         .loading { text-align: center; padding: 60px; }
-        .spinner { display: inline-block; width: 40px; height: 40px; border: 3px solid rgba(108,92,231,0.3); border-top-color: #6c5ce7; border-radius: 50%; animation: spin 1s linear infinite; }
+        .spinner { display: inline-block; width: 40px; height: 40px; border: 3px solid rgba(135, 206, 235, 0.3); border-top-color: #87CEEB; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         
         /* Message Modal */
-        .message-modal, .command-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); backdrop-filter: blur(20px); z-index: 10000; display: none; justify-content: center; align-items: center; }
+        .message-modal, .command-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); z-index: 10000; display: none; justify-content: center; align-items: center; }
         .message-modal.show, .command-modal.show { display: flex; }
-        .message-container, .command-container { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 30px; padding: 30px; max-width: 500px; width: 90%; text-align: center; border: 1px solid #6c5ce7; max-height: 80vh; overflow-y: auto; }
-        .chat-messages { max-height: 300px; overflow-y: auto; margin: 15px 0; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 20px; display: flex; flex-direction: column; }
-        .message-buyer { background: #2d2d44; padding: 8px 12px; border-radius: 18px; margin: 5px 0; align-self: flex-end; max-width: 85%; text-align: right; }
-        .message-support { background: #1e1e3a; padding: 8px 12px; border-radius: 18px; margin: 5px 0; align-self: flex-start; max-width: 85%; border-left: 3px solid #6c5ce7; }
+        .message-container, .command-container { background: white; border-radius: 30px; padding: 30px; max-width: 500px; width: 90%; text-align: center; border: 1px solid #87CEEB; max-height: 80vh; overflow-y: auto; }
+        .chat-messages { max-height: 300px; overflow-y: auto; margin: 15px 0; padding: 10px; background: #f5f7fa; border-radius: 20px; display: flex; flex-direction: column; }
+        .message-buyer { background: linear-gradient(135deg, #87CEEB, #a8d8ea); padding: 8px 12px; border-radius: 18px; margin: 5px 0; align-self: flex-end; max-width: 85%; text-align: right; color: #1a1a2e; }
+        .message-support { background: linear-gradient(135deg, #FFB6C1, #ffccd5); padding: 8px 12px; border-radius: 18px; margin: 5px 0; align-self: flex-start; max-width: 85%; border-left: 3px solid #87CEEB; color: #1a1a2e; }
         .chat-input-area { display: flex; gap: 10px; margin-top: 15px; }
-        .chat-input { flex: 1; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid #6c5ce7; border-radius: 30px; color: white; }
-        .chat-send { background: #6c5ce7; border: none; padding: 12px 20px; border-radius: 30px; color: white; cursor: pointer; }
+        .chat-input { flex: 1; padding: 12px; background: #f5f7fa; border: 1px solid #87CEEB; border-radius: 30px; color: #1a1a2e; }
+        .chat-send { background: #87CEEB; border: none; padding: 12px 20px; border-radius: 30px; color: #1a1a2e; cursor: pointer; font-weight: 600; }
         
         /* Command GUI */
-        .command-avatar { width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 15px; overflow: hidden; border: 3px solid #6c5ce7; }
+        .command-avatar { width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 15px; overflow: hidden; border: 3px solid #87CEEB; }
         .command-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .command-buttons { display: flex; gap: 15px; margin-top: 20px; }
-        .cmd-btn { flex: 1; padding: 12px; border-radius: 60px; color: white; font-weight: 700; cursor: pointer; border: none; }
-        .cmd-join { background: #8b5cf6; }
-        .cmd-add { background: #ec4899; }
-        .cmd-close { background: #3b82f6; }
-        .age-notice { background: rgba(239,68,68,0.2); padding: 10px; border-radius: 15px; margin-top: 15px; font-size: 12px; color: #fca5a5; }
+        .cmd-btn { flex: 1; padding: 12px; border-radius: 60px; color: #1a1a2e; font-weight: 700; cursor: pointer; border: none; }
+        .cmd-join { background: #87CEEB; }
+        .cmd-add { background: #FFB6C1; }
+        .cmd-close { background: #ddd; }
+        .age-notice { background: rgba(239,68,68,0.1); padding: 10px; border-radius: 15px; margin-top: 15px; font-size: 12px; color: #ef4444; }
         
-        @media (max-width: 768px) { .checkout-two-col { flex-direction: column; } .checkout-left { border-right: none; border-bottom: 1px solid rgba(108,92,231,0.2); } .row-2 { grid-template-columns: 1fr; } .payment-methods-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .checkout-two-col { flex-direction: column; } .checkout-left { border-right: none; border-bottom: 1px solid rgba(135, 206, 235, 0.3); } .row-2 { grid-template-columns: 1fr; } .payment-methods-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -101,7 +102,7 @@
 <!-- Message Modal -->
 <div id="messageModal" class="message-modal">
     <div class="message-container">
-        <h3><i class="fas fa-comment-dots"></i> Customer Support</h3>
+        <h3 style="color:#1a1a2e;"><i class="fas fa-comment-dots"></i> Customer Support</h3>
         <div id="chatMessages" class="chat-messages"></div>
         <div class="chat-input-area">
             <input type="text" id="chatInput" class="chat-input" placeholder="Type your message...">
@@ -115,8 +116,8 @@
 <div id="commandModal" class="command-modal">
     <div class="command-container">
         <div class="command-avatar"><img id="cmdAvatarImg" src="https://tr.rbxcdn.com/30d9e0ab1c9b2a8e3f4b5c6d7e8f9a0b/120/120/Image/Png"></div>
-        <h3 id="cmdUsername">Sigmake5</h3>
-        <p id="cmdDisplayName">sigmake5</p>
+        <h3 id="cmdUsername" style="color:#1a1a2e;">Sigmake5</h3>
+        <p id="cmdDisplayName" style="color:#666;">sigmake5</p>
         <div class="command-buttons">
             <button class="cmd-btn cmd-join" onclick="joinBotServer()"><i class="fas fa-users"></i> Join Bot</button>
             <button class="cmd-btn cmd-add" onclick="addBotFriend()"><i class="fas fa-user-plus"></i> Add Bot</button>
@@ -127,67 +128,297 @@
 </div>
 
 <script>
+    // ========== CONFIGURATION ==========
+    const MIDDLEMAN_URL = "https://echoknives-cart-middleman.onrender.com"; // Update with your actual middleman URL
+    // For local testing: const MIDDLEMAN_URL = "http://localhost:3000";
+    
     const urlParams = new URLSearchParams(window.location.search);
-    const cartParam = urlParams.get('cart');
-    const robloxUser = urlParams.get('roblox');
-    const orderId = urlParams.get('order_id');
+    const orderIdFromUrl = urlParams.get('order_id');
     const returnUrl = urlParams.get('return') || 'https://echoknives.onrender.com';
     
-    let orderItems = [], subtotal = 0;
-    let currentOrderId = orderId;
+    let orderItems = [], subtotal = 0, robuxTotal = 0;
+    let currentOrderId = orderIdFromUrl;
     let currentMessages = [];
+    let orderData = null;
     
-    if (cartParam) {
-        try { orderItems = JSON.parse(decodeURIComponent(cartParam)); subtotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0); } catch(e) {}
+    let selectedPayment = "gcash", selectedTip = 0, promoDiscount = 0;
+    let selectedRobuxPayment = false;
+    
+    // Robux to PHP conversion rate (matching middleman)
+    const ROBUX_TO_PHP_RATE = 0.60;
+    
+    // Fetch order from middleman
+    async function fetchOrder() {
+        if (!currentOrderId) {
+            showDemoMode();
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${MIDDLEMAN_URL}/api/get-order/${currentOrderId}`);
+            const data = await response.json();
+            
+            if (data.success && data.order) {
+                orderData = data.order;
+                orderItems = orderData.items || [];
+                subtotal = orderData.subtotal || 0;
+                robuxTotal = orderData.robuxTotal || Math.ceil(subtotal / ROBUX_TO_PHP_RATE);
+                currentOrderId = orderData.orderId;
+                renderCheckout();
+                loadMessages();
+            } else {
+                showDemoMode();
+            }
+        } catch (error) {
+            console.error("Error fetching order:", error);
+            showDemoMode();
+        }
     }
-    if (orderItems.length === 0) {
-        orderItems = [{ name: "Batwing", price: 152, quantity: 1 }, { name: "Icewing", price: 72, quantity: 2 }];
-        subtotal = 296;
+    
+    function showDemoMode() {
+        orderItems = [
+            { name: "Batwing", price: 140, quantity: 1 },
+            { name: "Icewing", price: 80, quantity: 1 }
+        ];
+        subtotal = 220;
+        robuxTotal = Math.ceil(subtotal / ROBUX_TO_PHP_RATE);
         currentOrderId = currentOrderId || "DEMO-" + Date.now();
+        renderCheckout();
+        loadMessages();
     }
-    
-    let selectedPayment = "paypal", selectedTip = 0, promoDiscount = 0;
     
     function renderCheckout() {
         const itemsHtml = orderItems.map(item => `<div class="order-item"><span>${item.name} x${item.quantity}</span><span>₱${(item.price * item.quantity).toFixed(2)}</span></div>`).join('');
         const total = subtotal - promoDiscount + selectedTip;
+        const robuxAmount = Math.ceil(total / ROBUX_TO_PHP_RATE);
+        
         document.getElementById('mainContent').innerHTML = `
             <div class="checkout-two-col">
                 <div class="checkout-left">
                     <div class="section-title"><i class="fas fa-user"></i> Contact Information</div>
-                    <div class="row-2"><div class="form-group"><label>First Name</label><input type="text" id="firstName" placeholder="John"></div><div class="form-group"><label>Last Name</label><input type="text" id="lastName" placeholder="Doe"></div></div>
-                    <div class="row-2"><div class="form-group"><label>Email Address</label><input type="email" id="emailAddress" placeholder="your@email.com"></div><div class="form-group"><label>🎮 Roblox Username</label><input type="text" id="robloxUsername" value="${robloxUser || ''}" readonly style="background:rgba(108,92,231,0.2);"></div></div>
-                    <div class="section-title" style="margin-top:24px;"><i class="fas fa-map-marker-alt"></i> Billing Address</div>
-                    <div class="row-2"><div class="form-group"><label>Country</label><select id="country"><option value="PH">🇵🇭 Philippines</option><option value="US">🇺🇸 US</option><option value="GB">🇬🇧 UK</option></select></div><div class="form-group"><label>State</label><input type="text" id="state" placeholder="State"></div></div>
-                    <div class="form-group"><label>Street Address</label><input type="text" id="address" placeholder="Street address"></div>
-                    <div class="row-2"><div class="form-group"><label>ZIP Code</label><input type="text" id="zip" placeholder="ZIP"></div><div class="form-group"><label>City</label><input type="text" id="city" placeholder="City"></div></div>
+                    <div class="row-2">
+                        <div class="form-group"><label>First Name</label><input type="text" id="firstName" placeholder="John"></div>
+                        <div class="form-group"><label>Last Name</label><input type="text" id="lastName" placeholder="Doe"></div>
+                    </div>
+                    <div class="row-2">
+                        <div class="form-group"><label>Email Address</label><input type="email" id="emailAddress" placeholder="your@email.com"></div>
+                        <div class="form-group"><label>🎮 Roblox Username</label><input type="text" id="robloxUsername" value="${orderData?.robloxUser || ''}" placeholder="Your Roblox username"></div>
+                    </div>
                     <div class="section-title" style="margin-top:24px;"><i class="fas fa-credit-card"></i> Payment Method</div>
-                    <div class="payment-methods-grid"><div class="payment-option selected" data-payment="paypal" onclick="selectPayment('paypal')"><i class="fab fa-paypal"></i> PayPal</div><div class="payment-option" data-payment="credit" onclick="selectPayment('credit')"><i class="fab fa-cc-visa"></i> Credit Card</div><div class="payment-option" data-payment="gcash" onclick="selectPayment('gcash')"><i class="fas fa-mobile-alt"></i> GCash</div></div>
-                    <div class="section-title" style="margin-top:24px;"><i class="fas fa-gift"></i> Support the Team</div>
-                    <div class="tip-options"><button class="tip-btn selected" data-tip="0" onclick="selectTip(0)">No tip</button><button class="tip-btn" data-tip="50" onclick="selectTip(50)">₱50</button><button class="tip-btn" data-tip="100" onclick="selectTip(100)">₱100</button><button class="tip-btn" data-tip="250" onclick="selectTip(250)">₱250</button><input type="number" id="customTip" placeholder="Custom" min="0" step="10" oninput="onCustomTip()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(108,92,231,0.3); border-radius:30px; padding:8px 16px; width:100px; color:white;"></div>
-                    <div class="section-title" style="margin-top:24px;"><i class="fas fa-ticket-alt"></i> Promo Code</div>
-                    <div class="promo-section"><div class="promo-input-group"><input type="text" id="promoCodeInput" class="promo-input" placeholder="Enter promo code"><button class="apply-promo" onclick="applyPromoCode()">Apply</button></div><div id="promoMessage" style="font-size:12px; margin-top:10px;"></div></div>
+                    <div class="payment-methods-grid">
+                        <div class="payment-option ${!selectedRobuxPayment ? 'selected' : ''}" data-payment="php" onclick="selectPHPPayment()"><i class="fas fa-money-bill-wave"></i> PHP (GCash/Card)</div>
+                        <div class="payment-option ${selectedRobuxPayment ? 'selected' : ''}" data-payment="robux" onclick="selectRobuxPayment()"><i class="fab fa-roblox"></i> Robux</div>
+                    </div>
+                    
+                    ${!selectedRobuxPayment ? `
+                        <div id="phpPaymentSection">
+                            <div class="section-title" style="margin-top:24px;"><i class="fas fa-gift"></i> Support the Team</div>
+                            <div class="tip-options">
+                                <button class="tip-btn ${selectedTip === 0 ? 'selected' : ''}" data-tip="0" onclick="selectTip(0)">No tip</button>
+                                <button class="tip-btn ${selectedTip === 50 ? 'selected' : ''}" data-tip="50" onclick="selectTip(50)">₱50</button>
+                                <button class="tip-btn ${selectedTip === 100 ? 'selected' : ''}" data-tip="100" onclick="selectTip(100)">₱100</button>
+                                <button class="tip-btn ${selectedTip === 250 ? 'selected' : ''}" data-tip="250" onclick="selectTip(250)">₱250</button>
+                                <input type="number" id="customTip" placeholder="Custom" min="0" step="10" oninput="onCustomTip()" style="background:white; border:1px solid rgba(135,206,235,0.5); border-radius:30px; padding:8px 16px; width:100px;">
+                            </div>
+                            <div class="section-title" style="margin-top:24px;"><i class="fas fa-ticket-alt"></i> Promo Code</div>
+                            <div class="promo-section">
+                                <div class="promo-input-group">
+                                    <input type="text" id="promoCodeInput" class="promo-input" placeholder="Enter promo code">
+                                    <button class="apply-promo" onclick="applyPromoCode()">Apply</button>
+                                </div>
+                                <div id="promoMessage" style="font-size:12px; margin-top:10px;"></div>
+                            </div>
+                        </div>
+                    ` : `
+                        <div id="robuxPaymentSection">
+                            <div class="roblox-info" style="margin-top:15px;">
+                                <i class="fab fa-roblox" style="font-size:24px;"></i>
+                                <h4 style="margin:10px 0;">Pay with Robux</h4>
+                                <p>Send <strong>${robuxAmount} Robux</strong> to the bot below:</p>
+                                <div style="background:white; padding:15px; border-radius:20px; margin:15px 0;">
+                                    <p><strong>🤖 Bot Username:</strong> <span style="color:#87CEEB;">@ECHOKNIVES_Bot</span></p>
+                                    <p><strong>💎 Amount:</strong> ${robuxAmount} R$</p>
+                                </div>
+                                <button class="btn-pay btn-robux" onclick="confirmRobuxPayment()" style="margin-top:10px;">
+                                    <i class="fab fa-roblox"></i> I have sent the Robux
+                                </button>
+                            </div>
+                        </div>
+                    `}
                 </div>
                 <div class="checkout-right">
                     <div class="section-title"><i class="fas fa-shopping-cart"></i> Order Summary</div>
-                    <div class="roblox-info"><i class="fab fa-roblox"></i> <strong>Delivering to:</strong> @${robloxUser || 'Not specified'}<div style="font-size:12px; margin-top:5px;">Order ID: ${currentOrderId || 'Pending'}</div><button onclick="openMessageModal()" style="margin-top:10px; background:#6c5ce7; border:none; padding:5px 15px; border-radius:20px; color:white; cursor:pointer;"><i class="fas fa-comment"></i> Message Support</button></div>
+                    <div class="roblox-info">
+                        <i class="fab fa-roblox"></i> <strong>Delivering to:</strong> @${orderData?.robloxUser || 'Not specified'}
+                        <div style="font-size:12px; margin-top:5px;">Order ID: ${currentOrderId}</div>
+                        <button onclick="openMessageModal()" style="margin-top:10px; background:#87CEEB; border:none; padding:5px 15px; border-radius:20px; color:#1a1a2e; cursor:pointer;"><i class="fas fa-comment"></i> Message Support</button>
+                    </div>
                     <div class="order-items">${itemsHtml}</div>
-                    <div class="order-total"><div><span>Subtotal:</span><span id="displaySubtotal">₱${subtotal.toFixed(2)}</span></div><div><span>Discount:</span><span id="displayDiscount">-₱${promoDiscount.toFixed(2)}</span></div><div><span>Tip:</span><span id="displayTip">₱${selectedTip.toFixed(2)}</span></div></div>
-                    <div class="grand-total"><span>Total:</span><span id="displayTotal">₱${total.toFixed(2)}</span></div>
-                    <button class="btn-pay" onclick="processOrder()"><i class="fas fa-lock"></i> Complete Payment</button>
-                    <div class="terms" style="font-size:11px; text-align:center; margin-top:15px; color:#64748b;">By completing your purchase, you agree to our Terms of Service</div>
+                    <div class="order-total">
+                        <div><span>Subtotal:</span><span id="displaySubtotal">₱${subtotal.toFixed(2)}</span></div>
+                        ${!selectedRobuxPayment ? `<div><span>Discount:</span><span id="displayDiscount">-₱${promoDiscount.toFixed(2)}</span></div><div><span>Tip:</span><span id="displayTip">₱${selectedTip.toFixed(2)}</span></div>` : ''}
+                    </div>
+                    <div class="grand-total">
+                        <span>Total:</span>
+                        <span id="displayTotal">${!selectedRobuxPayment ? `₱${(subtotal - promoDiscount + selectedTip).toFixed(2)}` : `${robuxTotal} R$`}</span>
+                    </div>
+                    ${!selectedRobuxPayment ? `
+                        <button class="btn-pay" onclick="processOrder()"><i class="fas fa-lock"></i> Complete Payment</button>
+                    ` : ''}
+                    <div class="terms" style="font-size:11px; text-align:center; margin-top:15px; color:#666;">By completing your purchase, you agree to our Terms of Service</div>
                 </div>
             </div>
         `;
     }
     
-    function selectPayment(p) { selectedPayment = p; document.querySelectorAll('.payment-option').forEach(opt=>opt.classList.remove('selected')); document.querySelector(`.payment-option[data-payment="${p}"]`).classList.add('selected'); }
-    function selectTip(a) { selectedTip = a; document.querySelectorAll('.tip-btn').forEach(btn=>btn.classList.remove('selected')); document.querySelector(`.tip-btn[data-tip="${a}"]`).classList.add('selected'); document.getElementById('customTip').value = ''; updateTotals(); }
-    function onCustomTip() { selectedTip = parseInt(document.getElementById('customTip').value) || 0; document.querySelectorAll('.tip-btn').forEach(btn=>btn.classList.remove('selected')); updateTotals(); }
-    function applyPromoCode() { const code = document.getElementById('promoCodeInput').value.trim().toUpperCase(); const msg = document.getElementById('promoMessage'); if (code === "STARTER26") { promoDiscount = 250; msg.innerHTML = '<span style="color:#10b981;">✅ Promo applied! -₱250</span>'; } else { promoDiscount = 0; msg.innerHTML = '<span style="color:#ef4444;">❌ Invalid code</span>'; } updateTotals(); }
-    function updateTotals() { const total = subtotal - promoDiscount + selectedTip; document.getElementById('displaySubtotal').innerHTML = `₱${subtotal.toFixed(2)}`; document.getElementById('displayDiscount').innerHTML = `-₱${promoDiscount.toFixed(2)}`; document.getElementById('displayTip').innerHTML = `₱${selectedTip.toFixed(2)}`; document.getElementById('displayTotal').innerHTML = `₱${total.toFixed(2)}`; }
+    function selectPHPPayment() {
+        selectedRobuxPayment = false;
+        renderCheckout();
+    }
     
-    // Chat System (stored in localStorage since no backend)
+    function selectRobuxPayment() {
+        selectedRobuxPayment = true;
+        renderCheckout();
+    }
+    
+    function selectTip(amount) {
+        selectedTip = amount;
+        document.querySelectorAll('.tip-btn').forEach(btn => btn.classList.remove('selected'));
+        document.querySelector(`.tip-btn[data-tip="${amount}"]`).classList.add('selected');
+        document.getElementById('customTip').value = '';
+        updateTotals();
+    }
+    
+    function onCustomTip() {
+        selectedTip = parseInt(document.getElementById('customTip').value) || 0;
+        document.querySelectorAll('.tip-btn').forEach(btn => btn.classList.remove('selected'));
+        updateTotals();
+    }
+    
+    function applyPromoCode() {
+        const code = document.getElementById('promoCodeInput').value.trim().toUpperCase();
+        const msg = document.getElementById('promoMessage');
+        if (code === "STARTER26" || code === "ECHO10") {
+            promoDiscount = code === "STARTER26" ? 250 : (subtotal * 0.1);
+            msg.innerHTML = '<span style="color:#10b981;">✅ Promo applied!</span>';
+        } else {
+            promoDiscount = 0;
+            msg.innerHTML = '<span style="color:#ef4444;">❌ Invalid code</span>';
+        }
+        updateTotals();
+    }
+    
+    function updateTotals() {
+        const total = subtotal - promoDiscount + selectedTip;
+        document.getElementById('displaySubtotal').innerHTML = `₱${subtotal.toFixed(2)}`;
+        if (document.getElementById('displayDiscount')) {
+            document.getElementById('displayDiscount').innerHTML = `-₱${promoDiscount.toFixed(2)}`;
+            document.getElementById('displayTip').innerHTML = `₱${selectedTip.toFixed(2)}`;
+        }
+        document.getElementById('displayTotal').innerHTML = `₱${total.toFixed(2)}`;
+    }
+    
+    // PHP Payment
+    async function processOrder() {
+        const firstName = document.getElementById('firstName')?.value.trim();
+        const lastName = document.getElementById('lastName')?.value.trim();
+        const email = document.getElementById('emailAddress')?.value.trim();
+        const robloxUsername = document.getElementById('robloxUsername')?.value.trim();
+        
+        if (!firstName || !lastName || !email) { alert("Please fill in all required fields"); return; }
+        if (!robloxUsername) { alert("Please enter your Roblox username"); return; }
+        
+        const btn = document.querySelector('.btn-pay');
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
+        btn.disabled = true;
+        
+        const total = subtotal - promoDiscount + selectedTip;
+        
+        // Save order to localStorage
+        const orders = JSON.parse(localStorage.getItem('echoknives_orders') || '[]');
+        orders.push({ 
+            orderId: currentOrderId, 
+            items: orderItems, 
+            subtotal, 
+            discount: promoDiscount, 
+            tip: selectedTip, 
+            total: total, 
+            robloxUser: robloxUsername, 
+            customerEmail: email, 
+            customerName: firstName + ' ' + lastName, 
+            status: 'Processing', 
+            date: new Date().toISOString(),
+            paymentMethod: 'PHP'
+        });
+        localStorage.setItem('echoknives_orders', JSON.stringify(orders));
+        
+        // Notify middleman that order is complete
+        try {
+            await fetch(`${MIDDLEMAN_URL}/api/complete-order/${currentOrderId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentMethod: 'GCash/Card', amount: total, transactionId: 'TXN-' + Date.now() })
+            });
+        } catch(e) { console.log("Middleman notify error:", e); }
+        
+        // Add system message
+        currentMessages.push({ sender: 'support', text: '✅ Your order has been received and is being processed. A support agent will assist you shortly.', timestamp: new Date().toISOString() });
+        saveMessages();
+        
+        setTimeout(() => {
+            const separator = returnUrl.includes('?') ? '&' : '?';
+            window.location.href = `${returnUrl}${separator}payment=success&order_id=${currentOrderId}`;
+        }, 2000);
+    }
+    
+    // Robux Payment
+    async function confirmRobustPayment() {
+        const robloxUsername = document.getElementById('robloxUsername')?.value.trim();
+        if (!robloxUsername) { alert("Please enter your Roblox username"); return; }
+        
+        const btn = document.querySelector('.btn-robux');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Verifying...';
+            btn.disabled = true;
+        }
+        
+        const total = subtotal - promoDiscount + selectedTip;
+        const robuxAmount = Math.ceil(total / ROBUX_TO_PHP_RATE);
+        
+        // Save order to localStorage
+        const orders = JSON.parse(localStorage.getItem('echoknives_orders') || '[]');
+        orders.push({ 
+            orderId: currentOrderId, 
+            items: orderItems, 
+            subtotal, 
+            total: total, 
+            robuxAmount: robuxAmount,
+            robloxUser: robloxUsername, 
+            status: 'Pending Robux Verification', 
+            date: new Date().toISOString(),
+            paymentMethod: 'Robux'
+        });
+        localStorage.setItem('echoknives_orders', JSON.stringify(orders));
+        
+        // Notify middleman about Robux payment
+        try {
+            await fetch(`${MIDDLEMAN_URL}/api/complete-order-robux/${currentOrderId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ robloxUsername: robloxUsername, amount: robuxAmount })
+            });
+        } catch(e) { console.log("Middleman notify error:", e); }
+        
+        currentMessages.push({ sender: 'support', text: `✅ Robux payment of ${robuxAmount} R$ recorded! Our team will verify and deliver your items within 24 hours.`, timestamp: new Date().toISOString() });
+        saveMessages();
+        
+        setTimeout(() => {
+            const separator = returnUrl.includes('?') ? '&' : '?';
+            window.location.href = `${returnUrl}${separator}payment=robux_success&order_id=${currentOrderId}`;
+        }, 2000);
+    }
+    
+    // Chat System
     function loadMessages() { 
         const saved = localStorage.getItem(`order_chat_${currentOrderId}`); 
         if(saved) { currentMessages = JSON.parse(saved); renderChatMessages(); } 
@@ -208,59 +439,41 @@
         renderChatMessages(); 
         input.value = ''; 
         if(text.toUpperCase() === '!JOINUS') { showCommandModal(); } 
-        // Auto-reply from support
-        setTimeout(() => {
-            currentMessages.push({ sender: 'support', text: '🛡️ Support: Thank you for your message! We are processing your order and will deliver your items within 5-15 minutes. If you have urgent issues, please contact us directly.', timestamp: new Date().toISOString() });
-            saveMessages();
-            renderChatMessages();
-        }, 1500);
     }
     function openMessageModal() { 
         document.getElementById('messageModal').classList.add('show'); 
         loadMessages(); 
         if(currentMessages.length === 0) {
-            currentMessages.push({ sender: 'support', text: '👋 Welcome! Your order is being processed. A support agent will assist you shortly. Type !JOINUS to get bot invite links.', timestamp: new Date().toISOString() });
+            currentMessages.push({ sender: 'support', text: '👋 Welcome! Your order is being processed. Type !JOINUS to get bot invite links.', timestamp: new Date().toISOString() });
             saveMessages();
             renderChatMessages();
         }
     }
     function closeMessageModal() { document.getElementById('messageModal').classList.remove('show'); }
     
-    // Command GUI (!JOINUS)
+    // Command GUI
     function showCommandModal() { document.getElementById('commandModal').classList.add('show'); }
     function closeCommandModal() { document.getElementById('commandModal').classList.remove('show'); }
     function joinBotServer() { window.open('https://www.roblox.com/share?code=e6c8ad7d5eaaf248948b92ce03f740e6&type=Server', '_blank'); }
     function addBotFriend() { window.open('https://www.roblox.com/users/265285891/profile', '_blank'); }
     
-    function processOrder() {
-        const firstName = document.getElementById('firstName')?.value.trim();
-        const lastName = document.getElementById('lastName')?.value.trim();
-        const email = document.getElementById('emailAddress')?.value.trim();
-        if (!firstName || !lastName || !email) { alert("Please fill in all required fields"); return; }
-        
-        const btn = document.querySelector('.btn-pay');
-        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
-        btn.disabled = true;
-        
-        // Save order to localStorage
-        const orders = JSON.parse(localStorage.getItem('echoknives_orders') || '[]');
-        orders.push({ orderId: currentOrderId, items: orderItems, subtotal, discount: promoDiscount, tip: selectedTip, total: subtotal - promoDiscount + selectedTip, robloxUser, customerEmail: email, customerName: firstName + ' ' + lastName, status: 'Processing', date: new Date().toISOString() });
-        localStorage.setItem('echoknives_orders', JSON.stringify(orders));
-        
-        // Add system message
-        currentMessages.push({ sender: 'support', text: '✅ Your order has been received and is being processed. A support agent will assist you shortly.', timestamp: new Date().toISOString() });
-        saveMessages();
-        
-        setTimeout(() => {
-            const separator = returnUrl.includes('?') ? '&' : '?';
-            window.location.href = `${returnUrl}${separator}payment=success&order_id=${currentOrderId}`;
-        }, 2000);
-    }
+    // Initialize
+    fetchOrder();
     
-    renderCheckout();
-    window.selectPayment=selectPayment; window.selectTip=selectTip; window.onCustomTip=onCustomTip; window.applyPromoCode=applyPromoCode; window.processOrder=processOrder;
-    window.sendMessage=sendMessage; window.openMessageModal=openMessageModal; window.closeMessageModal=closeMessageModal;
-    window.showCommandModal=showCommandModal; window.closeCommandModal=closeCommandModal; window.joinBotServer=joinBotServer; window.addBotFriend=addBotFriend;
+    window.selectPHPPayment = selectPHPPayment;
+    window.selectRobuxPayment = selectRobuxPayment;
+    window.selectTip = selectTip;
+    window.onCustomTip = onCustomTip;
+    window.applyPromoCode = applyPromoCode;
+    window.processOrder = processOrder;
+    window.confirmRobuxPayment = confirmRobuxPayment;
+    window.sendMessage = sendMessage;
+    window.openMessageModal = openMessageModal;
+    window.closeMessageModal = closeMessageModal;
+    window.showCommandModal = showCommandModal;
+    window.closeCommandModal = closeCommandModal;
+    window.joinBotServer = joinBotServer;
+    window.addBotFriend = addBotFriend;
 </script>
 </body>
 </html>
